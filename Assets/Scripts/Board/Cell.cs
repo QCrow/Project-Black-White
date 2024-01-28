@@ -36,9 +36,10 @@ public class Cell : MonoBehaviour
     _propBlock = new MaterialPropertyBlock();
   }
 
-  public void Initialize(int x, int y)
+  public void Initialize(int x, int y, bool isShadowed)
   {
     SetIndexPosition(x, y);
+    this._isShadowed = isShadowed;
     UpdateCellDisplay();
   }
 

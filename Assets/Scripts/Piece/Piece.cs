@@ -8,7 +8,7 @@ public abstract class Piece : MonoBehaviour
   [SerializeField] protected int _hitPoints;
 
 
-  [SerializeField] private bool _isShadowed;
+  public bool IsShadowed;
   private Cell _cellUnderPiece;
   protected int _currentHitPoints;
 
@@ -54,7 +54,6 @@ public abstract class Piece : MonoBehaviour
     }
 
     newCell.PieceOnCell = this;
-    newCell.IsShadowed = this._isShadowed;
     BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
   }
 

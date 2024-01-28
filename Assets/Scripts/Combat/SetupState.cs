@@ -45,13 +45,15 @@ public class SetupState : ICombatState
     if (cell.PieceOnCell == null)
     {
       if (_piecesToPlace.Count == 0) return;
-      Piece pieceToPlace = _piecesToPlace.Dequeue();
-      // Debug.Log(pieceToPlace);
+      Piece pieceToPlace = _piecesToPlace.Peek();
+      if (pieceToPlace.IsShadowed != cell.IsShadowed) return;
+
       command = new PlacePieceCommand(pieceToPlace, cell);
       CombatManager.Instance.Invoker.SetCommand(command);
       CombatManager.Instance.Invoker.ExecuteCommand();
 
       _commands.Add(command);
+      _piecesToPlace.Dequeue();
     }
     else
     {

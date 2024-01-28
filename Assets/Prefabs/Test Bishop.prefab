@@ -122,4 +122,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PossibleMoves: {fileID: 0}
   _hitPoints: 3
-  _isShadowed: 1
+  IsShadowed: 1

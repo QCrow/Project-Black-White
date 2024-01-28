@@ -122,4 +122,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PossibleMoves: {fileID: 11400000, guid: 7f2d18a3f3d7fd54a9607fed433bf261, type: 2}
   _hitPoints: 5
-  _isShadowed: 1
+  IsShadowed: 1
