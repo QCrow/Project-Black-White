@@ -11,6 +11,8 @@ public class BoardManager : MonoBehaviour
   [SerializeField] private int size = 8;
   public List<List<Cell>> CurrentBoard;
 
+  public int ShadowedCellsCount;
+
   private void Awake()
   {
     if (Instance == null)
@@ -64,6 +66,8 @@ public class BoardManager : MonoBehaviour
       // Add the row to the board
       CurrentBoard.Add(row);
     }
+
+    ShadowedCellsCount = 0;
   }
 
   public void MovePieceToCell(GameObject piece, GameObject newCell)
@@ -79,5 +83,17 @@ public class BoardManager : MonoBehaviour
     float cellHeight = cell.transform.localScale.y;
     float pieceHeight = piece.transform.localScale.y;
     return new Vector3(cellPosition.x, cellPosition.y + cellHeight / 2 + pieceHeight / 2, cellPosition.z);
+  }
+
+  public void UpdateShadowedCellsCount(bool isShadowed)
+  {
+    if (isShadowed)
+    {
+      ShadowedCellsCount++;
+    }
+    else
+    {
+      ShadowedCellsCount--;
+    }
   }
 }

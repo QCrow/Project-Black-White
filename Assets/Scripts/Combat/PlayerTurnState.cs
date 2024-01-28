@@ -1,20 +1,26 @@
-public class PlayerTurnState : TurnState
+using UnityEngine;
+
+public class PlayerTurnState : ICombatState
 {
-  public override void EnterState(CombatManager manager)
+
+  public void EnterState(CombatManager manager)
   {
+    Debug.Log("Entering Player Turn State");
     RefreshPieces(manager);
   }
-  public override void UpdateState(CombatManager manager)
+
+  public void ExitState(CombatManager manager)
   {
-    base.UpdateState(manager);
+    throw new System.NotImplementedException();
   }
-  public override void ExitState(CombatManager manager)
+
+  public void UpdateState(CombatManager manager)
   {
-    base.ExitState(manager);
+    throw new System.NotImplementedException();
   }
 
   private void RefreshPieces(CombatManager manager)
   {
-    manager.PlayerPieces.ForEach(piece => piece.RefreshActions());
+    manager.AlivePieces.ForEach(piece => piece.RefreshActions());
   }
 }

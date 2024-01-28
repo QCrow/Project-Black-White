@@ -12,6 +12,7 @@ public class Cell : MonoBehaviour
       {
         _isShadowed = value;
         UpdateCellDisplay();
+        BoardManager.Instance.UpdateShadowedCellsCount(_isShadowed);
       }
     }
   }

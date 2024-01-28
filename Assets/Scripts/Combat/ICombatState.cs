@@ -6,13 +6,3 @@ public interface ICombatState
   void UpdateState(CombatManager manager);
   void ExitState(CombatManager manager);
 }
-
-public abstract class TurnState : ICombatState
-{
-  protected List<ICombatState> _subStates;
-  protected ICombatState _currentSubstate;
-
-  public virtual void EnterState(CombatManager manager) { }
-  public virtual void UpdateState(CombatManager manager) { }
-  public virtual void ExitState(CombatManager manager) { }
-}

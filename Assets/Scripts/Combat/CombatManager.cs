@@ -15,6 +15,9 @@ public class CombatManager : MonoBehaviour
   public List<Piece> EnemyPieces = new List<Piece>();
 
   public ICombatState CurrentState { get; private set; }
+  // Event system for when the current state changes
+  public delegate void CombatStateChangedHandler(ICombatState newState);
+  public static event CombatStateChangedHandler OnCombatStateChanged;
 
   private void Start()
   {
@@ -51,6 +54,8 @@ public class CombatManager : MonoBehaviour
   {
     CurrentState?.ExitState(this);
     CurrentState = newState;
+    // Notify that the state has changed
+    OnCombatStateChanged?.Invoke(newState);
     CurrentState.EnterState(this);
   }
 }

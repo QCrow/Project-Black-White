@@ -5,11 +5,12 @@ using UnityEngine;
 public class SetupState : ICombatState
 {
   private Queue<Piece> _piecesToPlace;
-
-  // TODO: Data structure to hold previous commands to undo
   private List<ICommand> _commands;
+  public bool ConfirmedForNextState;
+
   public void EnterState(CombatManager manager)
   {
+    ConfirmedForNextState = false;
 
     // Set the pieces to place
     _piecesToPlace = new Queue<Piece>();
@@ -30,6 +31,12 @@ public class SetupState : ICombatState
 
   public void UpdateState(CombatManager manager)
   {
+    // Enable or disable the confirm button
+    UIManager.Instance.SetConfirmButtonInteractable(_piecesToPlace.Count == 0);
+    if (ConfirmedForNextState)
+    {
+      CombatManager.Instance.ChangeState(new PlayerTurnState());
+    }
   }
 
   private void HandleCellSelected(Cell cell)
