@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public abstract class Piece : MonoBehaviour
 {
@@ -54,13 +55,16 @@ public abstract class Piece : MonoBehaviour
 
   public virtual void RefreshActions()
   {
-    this.HasMoved = false;
-    this.HasAttacked = false;
+    this._currentActionPoints = this._maxActionPoints;
   }
 
   public virtual void ExhaustActions()
   {
-    this.HasMoved = true;
-    this.HasAttacked = true;
+    this._currentActionPoints = 0;
+  }
+
+  public virtual void UseActions(int usedActionPoints)
+  {
+    this._currentActionPoints -= usedActionPoints;
   }
 }

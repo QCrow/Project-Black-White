@@ -5,10 +5,8 @@ public class CombatManager : MonoBehaviour
 {
   public static CombatManager Instance { get; private set; }
   public CommandInvoker Invoker;
-  public Player PlayerData;
-  // TODO: Enemy setup data should be stored here
-  // public EnemySetupSO EnemySetup;
 
+  private Player _playerData;
   public List<Piece> PlayerPieces = new List<Piece>();
   public List<Piece> PlayerOnBoardPieces = new List<Piece>();
   public List<Piece> PlayerOffBoardPieces = new List<Piece>();
@@ -30,15 +28,15 @@ public class CombatManager : MonoBehaviour
     {
       Destroy(gameObject); // Destroy any duplicate instances.
     }
+    _playerData = PlayerManager.Instance.Player;
 
     // Instantiate all player pieces and put them into the faraway graveyard cell
-    foreach (var character in PlayerData.ActiveCharacters)
+    foreach (var character in _playerData.ActiveCharacters)
     {
-      GameObject piece = Instantiate(CharacterFactory.Instance.getPrefabFromType(character.PieceType));
-      Piece pieceScript = piece.GetComponent<Piece>();
-      pieceScript.CellUnderPiece = BoardManager.Graveyard;
+      Piece piece = CharacterFactory.Instance.CreatePiece(character.PieceType);
 
-      PlayerPieces.Add(pieceScript);
+      piece.CellUnderPiece = BoardManager.Graveyard;
+      PlayerPieces.Add(piece);
     }
 
     this.Invoker = new CommandInvoker();

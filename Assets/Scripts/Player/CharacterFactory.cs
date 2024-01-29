@@ -21,7 +21,7 @@ public class CharacterFactory : MonoBehaviour
     }
   }
 
-  public GameObject getPrefabFromType(PieceType pieceType)
+  private GameObject getPrefabFromType(PieceType pieceType)
   {
     switch (pieceType)
     {
@@ -34,5 +34,12 @@ public class CharacterFactory : MonoBehaviour
       default:
         return null;
     }
+  }
+
+  public Piece CreatePiece(PieceType pieceType)
+  {
+    GameObject prefab = getPrefabFromType(pieceType);
+    Piece piece = Instantiate(prefab).GetComponent<Piece>();
+    return piece;
   }
 }
