@@ -621,7 +621,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerSetup: {fileID: 11400000, guid: 0e3f50bc646b73c4e8d58b61ae8347f3, type: 2}
   PlayerPieces: []
-  AlivePieces: []
+  PlayerOnBoardPieces: []
+  PlayerOffBoardPieces: []
   EnemyPieces: []
 --- !u!114 &1661608795
 MonoBehaviour:
@@ -696,7 +697,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 30.5
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:

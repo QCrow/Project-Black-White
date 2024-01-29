@@ -20,13 +20,13 @@ public class PlacePieceCommand : ICommand
   public void Execute()
   {
     _piece.CellUnderPiece = _cell;
-    CombatManager.Instance.AlivePieces.Add(_piece);
+    CombatManager.Instance.PlayerOnBoardPieces.Add(_piece);
   }
 
   public void Undo()
   {
     _piece.CellUnderPiece = BoardManager.Graveyard;
-    CombatManager.Instance.AlivePieces.Remove(_piece);
+    CombatManager.Instance.PlayerOnBoardPieces.Remove(_piece);
 
     _cell.IsShadowed = _previousCellState;
   }

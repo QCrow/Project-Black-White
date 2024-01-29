@@ -13,7 +13,8 @@ public class SetupState : ICombatState
     ConfirmedForNextState = false;
 
     // Set the pieces to place
-    _piecesToPlace = new Queue<Piece>();
+    _piecesToPlace = new Queue<Piece>(); // TODO: This should be moved in CombatManager as a structure for pieces that are not "alive" on board
+
     foreach (Piece piece in CombatManager.Instance.PlayerPieces)
     {
       _piecesToPlace.Enqueue(piece);
@@ -58,7 +59,7 @@ public class SetupState : ICombatState
     else
     {
       Piece piece = cell.PieceOnCell;
-      int foundIndex = CombatManager.Instance.AlivePieces.IndexOf(piece);
+      int foundIndex = CombatManager.Instance.PlayerOnBoardPieces.IndexOf(piece);
       if (foundIndex >= 0)
       {
         // Remove the piece from the player pieces list

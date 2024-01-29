@@ -5,12 +5,13 @@ public class CombatManager : MonoBehaviour
 {
   public static CombatManager Instance { get; private set; }
   public CommandInvoker Invoker;
-  public PlayerSetupSO PlayerSetup;
+  public Player PlayerData;
   // TODO: Enemy setup data should be stored here
   // public EnemySetupSO EnemySetup;
 
   public List<Piece> PlayerPieces = new List<Piece>();
-  public List<Piece> AlivePieces = new List<Piece>();
+  public List<Piece> PlayerOnBoardPieces = new List<Piece>();
+  public List<Piece> PlayerOffBoardPieces = new List<Piece>();
 
   public List<Piece> EnemyPieces = new List<Piece>();
 
@@ -31,9 +32,9 @@ public class CombatManager : MonoBehaviour
     }
 
     // Instantiate all player pieces and put them into the faraway graveyard cell
-    foreach (var prefab in PlayerSetup.Pieces)
+    foreach (var character in PlayerData.ActiveCharacters)
     {
-      GameObject piece = Instantiate(prefab);
+      GameObject piece = Instantiate(CharacterFactory.Instance.getPrefabFromType(character.PieceType));
       Piece pieceScript = piece.GetComponent<Piece>();
       pieceScript.CellUnderPiece = BoardManager.Graveyard;
 

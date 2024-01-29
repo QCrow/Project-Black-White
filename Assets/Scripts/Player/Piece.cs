@@ -3,25 +3,16 @@ using UnityEngine;
 
 public abstract class Piece : MonoBehaviour
 {
-  [SerializeField] public RangeSO PossibleMoves;
-  [SerializeField] public List<Skill> Skills;
-  [SerializeField] protected int _hitPoints;
+  private int _moveRange;
+  public CharacterDataSO data;
+  protected int _maxHitPoints;
+  protected int _currentHitPoints;
 
+  protected int _maxActionPoints;
+  protected int _currentActionPoints;
 
   public bool IsShadowed;
   private Cell _cellUnderPiece;
-  protected int _currentHitPoints;
-
-  public bool HasMoved { get; set; }
-  public bool HasAttacked { get; set; }
-  public bool IsExhausted
-  {
-    get
-    {
-      return HasMoved && HasAttacked;
-    }
-  }
-
   public Cell CellUnderPiece
   {
     get => _cellUnderPiece;
@@ -36,9 +27,14 @@ public abstract class Piece : MonoBehaviour
     }
   }
 
-  private void Start()
+  public bool HasMoved { get; set; }
+  public bool HasAttacked { get; set; }
+  public bool IsExhausted
   {
-    Initialize();
+    get
+    {
+      return HasMoved && HasAttacked;
+    }
   }
 
   protected virtual void Initialize()
@@ -47,12 +43,11 @@ public abstract class Piece : MonoBehaviour
 
   protected virtual void OnPieceMoved(Cell oldCell, Cell newCell)
   {
-
     if (oldCell != null)
     {
       oldCell.PieceOnCell = null;
     }
-
+    Debug.Log(newCell);
     newCell.PieceOnCell = this;
     BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
   }

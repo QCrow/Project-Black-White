@@ -21,6 +21,6 @@ public class PlayerTurnState : ICombatState
 
   private void RefreshPieces(CombatManager manager)
   {
-    manager.AlivePieces.ForEach(piece => piece.RefreshActions());
+    manager.PlayerOnBoardPieces.ForEach(piece => piece.RefreshActions());
   }
 }
