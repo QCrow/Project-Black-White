@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 9203280003077203813}
   - component: {fileID: 6596483583836611197}
   m_Layer: 0
-  m_Name: Test Rook
+  m_Name: Test Sharpshooter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: d8b1de33c09db884e8685c8e776909e6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -120,6 +120,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b99dad5bbb63584095e0e327616e4df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PossibleMoves: {fileID: 11400000, guid: 7f2d18a3f3d7fd54a9607fed433bf261, type: 2}
-  _hitPoints: 5
+  PossibleMoves: {fileID: 0}
+  _hitPoints: 3
   IsShadowed: 1

@@ -1,39 +1,31 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class SetupState : ICombatState
 {
-  private Queue<Piece> _piecesToPlace;
   private List<ICommand> _commands;
   public bool ConfirmedForNextState;
 
-  public void EnterState(CombatManager manager)
+  public void EnterState()
   {
     ConfirmedForNextState = false;
-
-    // Set the pieces to place
-    _piecesToPlace = new Queue<Piece>(); // TODO: This should be moved in CombatManager as a structure for pieces that are not "alive" on board
-
-    foreach (Piece piece in CombatManager.Instance.PlayerPieces)
-    {
-      _piecesToPlace.Enqueue(piece);
-    }
 
     _commands = new List<ICommand>();
 
     InputManager.OnCellSelected += HandleCellSelected;
   }
 
-  public void ExitState(CombatManager manager)
+  public void ExitState()
   {
     InputManager.OnCellSelected -= HandleCellSelected;
   }
 
-  public void UpdateState(CombatManager manager)
+  public void UpdateState()
   {
     // Enable or disable the confirm button
-    UIManager.Instance.SetConfirmButtonInteractable(_piecesToPlace.Count == 0);
+    UIManager.Instance.SetConfirmButtonInteractable(CombatManager.Instance.PlayerOffBoardPieces.Count == 0);
     if (ConfirmedForNextState)
     {
       CombatManager.Instance.ChangeState(new PlayerTurnState());
@@ -43,23 +35,12 @@ public class SetupState : ICombatState
   private void HandleCellSelected(Cell cell)
   {
     ICommand command;
-    if (cell.PieceOnCell == null)
-    {
-      if (_piecesToPlace.Count == 0) return;
-      Piece pieceToPlace = _piecesToPlace.Peek();
-      if (pieceToPlace.IsShadowed != cell.IsShadowed) return;
 
-      command = new PlacePieceCommand(pieceToPlace, cell);
-      CombatManager.Instance.Invoker.SetCommand(command);
-      CombatManager.Instance.Invoker.ExecuteCommand();
-
-      _commands.Add(command);
-      _piecesToPlace.Dequeue();
-    }
-    else
+    Piece pieceOnCell = null; // Existing piece on the cell
+    if (cell.PieceOnCell != null)
     {
-      Piece piece = cell.PieceOnCell;
-      int foundIndex = CombatManager.Instance.PlayerOnBoardPieces.IndexOf(piece);
+      pieceOnCell = cell.PieceOnCell;
+      int foundIndex = CombatManager.Instance.PlayerOnBoardPieces.IndexOf(pieceOnCell);
       if (foundIndex >= 0)
       {
         // Remove the piece from the player pieces list
@@ -68,8 +49,21 @@ public class SetupState : ICombatState
         CombatManager.Instance.Invoker.UndoCommand();
         _commands.RemoveAt(foundIndex);
 
-        _piecesToPlace.Enqueue(piece);
+        CombatManager.Instance.PlayerOffBoardPieces.Add(pieceOnCell);
       }
     }
+    if (CombatManager.Instance.PlayerOffBoardPieces.Count == 0) return;
+
+    Piece pieceToPlace = CombatManager.Instance.PlayerOffBoardPieces[0];
+    if (pieceToPlace == pieceOnCell) return; // If the place to place is the same piece that we just removed, do nothing
+    if (pieceToPlace.IsShadowed != cell.IsShadowed) return;
+
+    command = new DeployCommand(pieceToPlace, cell);
+    CombatManager.Instance.Invoker.SetCommand(command);
+    CombatManager.Instance.Invoker.ExecuteCommand();
+
+    _commands.Add(command);
+    CombatManager.Instance.PlayerOffBoardPieces.Remove(pieceToPlace);
+
   }
 }

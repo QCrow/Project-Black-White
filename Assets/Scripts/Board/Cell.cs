@@ -40,6 +40,10 @@ public class Cell : MonoBehaviour
   {
     SetIndexPosition(x, y);
     this._isShadowed = isShadowed;
+    if (isShadowed)
+    {
+      BoardManager.Instance.UpdateShadowedCellsCount(true);
+    }
     UpdateCellDisplay();
   }
 

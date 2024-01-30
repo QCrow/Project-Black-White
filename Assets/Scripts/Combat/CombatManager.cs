@@ -28,15 +28,17 @@ public class CombatManager : MonoBehaviour
     {
       Destroy(gameObject); // Destroy any duplicate instances.
     }
-    _playerData = PlayerManager.Instance.Player;
+    _playerData = DataManager.Instance.Player;
 
     // Instantiate all player pieces and put them into the faraway graveyard cell
     foreach (var character in _playerData.ActiveCharacters)
     {
       Piece piece = CharacterFactory.Instance.CreatePiece(character.PieceType);
+      piece.data = character;
 
       piece.CellUnderPiece = BoardManager.Graveyard;
       PlayerPieces.Add(piece);
+      PlayerOffBoardPieces.Add(piece);
     }
 
     this.Invoker = new CommandInvoker();
@@ -46,15 +48,15 @@ public class CombatManager : MonoBehaviour
 
   private void Update()
   {
-    CurrentState.UpdateState(this);
+    CurrentState.UpdateState();
   }
 
   public void ChangeState(ICombatState newState)
   {
-    CurrentState?.ExitState(this);
+    CurrentState?.ExitState();
     CurrentState = newState;
     // Notify that the state has changed
     OnCombatStateChanged?.Invoke(newState);
-    CurrentState.EnterState(this);
+    CurrentState.EnterState();
   }
 }

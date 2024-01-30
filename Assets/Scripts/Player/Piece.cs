@@ -1,17 +1,34 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 public abstract class Piece : MonoBehaviour
 {
-  private int _moveRange;
-  public CharacterDataSO data;
-  protected int _maxHitPoints;
+  public Character data;
   protected int _currentHitPoints;
 
-  protected int _maxActionPoints;
   protected int _currentActionPoints;
+  public int CurrentActionPoints
+  {
+    get => _currentActionPoints;
+    set
+    {
+      if (_currentActionPoints != value)
+      {
+        _currentActionPoints = value;
+        UpdateAvailableActions();
+      }
+    }
+  }
 
+  private void UpdateAvailableActions()
+  {
+
+  }
+
+  public int RedeployTimer;
   public bool IsShadowed;
   private Cell _cellUnderPiece;
   public Cell CellUnderPiece
@@ -28,18 +45,28 @@ public abstract class Piece : MonoBehaviour
     }
   }
 
-  public bool HasMoved { get; set; }
-  public bool HasAttacked { get; set; }
-  public bool IsExhausted
+  public bool IsMovable
   {
-    get
-    {
-      return HasMoved && HasAttacked;
-    }
+    get => _currentActionPoints - MovementCost >= 0 && !ActiveEffects.ContainsKey(EffectType.Stun) && !ActiveEffects.ContainsKey(EffectType.Root);
+  }
+
+  private int MovementCost
+  {
+    get => 1; //TODO: To be changed for logic processing
+  }
+
+  public Dictionary<EffectType, int> ActiveEffects = new Dictionary<EffectType, int>();
+  protected void Start()
+  {
+    Initialize();
   }
 
   protected virtual void Initialize()
   {
+    _currentHitPoints = data.MaxHitPoints;
+    CurrentActionPoints = data.MaxActionPoints;
+
+    RedeployTimer = 0;
   }
 
   protected virtual void OnPieceMoved(Cell oldCell, Cell newCell)
@@ -53,18 +80,40 @@ public abstract class Piece : MonoBehaviour
     BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
   }
 
-  public virtual void RefreshActions()
+  #region Update Piece Stats
+  public void VeiledRefreshActions()
   {
-    this._currentActionPoints = this._maxActionPoints;
+    CurrentActionPoints = data.MaxActionPoints;
   }
 
-  public virtual void ExhaustActions()
+  public void UnveiledRefreshActions()
   {
-    this._currentActionPoints = 0;
+    CurrentActionPoints = Mathf.Max(data.MaxActionPoints, CurrentActionPoints + data.unveiledActionPointRestoration);
   }
 
-  public virtual void UseActions(int usedActionPoints)
+  public void ExhaustActions()
   {
-    this._currentActionPoints -= usedActionPoints;
+    CurrentActionPoints = 0;
   }
+
+  public void DecreaseAP(int usedActionPoints)
+  {
+    CurrentActionPoints -= usedActionPoints;
+  }
+
+  public void IncreaseAP(int gainedActionPoints)
+  {
+    CurrentActionPoints += gainedActionPoints;
+  }
+
+  public void DecreaseHP(int damage)
+  {
+    _currentHitPoints -= damage;
+  }
+
+  public void IncreaseHP(int healing)
+  {
+    _currentHitPoints += healing;
+  }
+  #endregion
 }

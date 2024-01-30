@@ -1,26 +1,59 @@
+using System;
 using UnityEngine;
+using UnityEngine.Rendering.UI;
 
 public class PlayerTurnState : ICombatState
 {
-
-  public void EnterState(CombatManager manager)
+  public void EnterState()
   {
-    Debug.Log("Entering Player Turn State");
-    RefreshPieces(manager);
+    RefreshPieces();
+    DecreaseRedeployTimers();
+    InputManager.OnCellSelected += HandleCellSelected;
   }
 
-  public void ExitState(CombatManager manager)
+  public void UpdateState()
   {
-    throw new System.NotImplementedException();
+
   }
 
-  public void UpdateState(CombatManager manager)
+  public void ExitState()
   {
-    throw new System.NotImplementedException();
+    InputManager.OnCellSelected -= HandleCellSelected;
   }
 
-  private void RefreshPieces(CombatManager manager)
+  private void HandleCellSelected(Cell cell)
   {
-    manager.PlayerOnBoardPieces.ForEach(piece => piece.RefreshActions());
+    if (cell.PieceOnCell != null)
+    {
+      // TODO: Show possible actions for the selected piece
+
+    }
+  }
+
+
+  private void RefreshPieces()
+  {
+    foreach (var piece in CombatManager.Instance.PlayerOnBoardPieces)
+    {
+      if (piece.IsShadowed == piece.CellUnderPiece.IsShadowed)
+      {
+        piece.VeiledRefreshActions();
+      }
+      else
+      {
+        piece.UnveiledRefreshActions();
+      }
+    }
+  }
+
+  private void DecreaseRedeployTimers()
+  {
+    foreach (var piece in CombatManager.Instance.PlayerOffBoardPieces)
+    {
+      if (piece.RedeployTimer > 0)
+      {
+        piece.RedeployTimer--;
+      }
+    }
   }
 }

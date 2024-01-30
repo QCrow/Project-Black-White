@@ -4,13 +4,13 @@ public interface ICommand
   void Undo();
 }
 
-public class PlacePieceCommand : ICommand
+public class DeployCommand : ICommand
 {
   private Piece _piece;
   private Cell _cell;
   private bool _previousCellState;
 
-  public PlacePieceCommand(Piece piece, Cell cell)
+  public DeployCommand(Piece piece, Cell cell)
   {
     _piece = piece;
     _cell = cell;
@@ -20,13 +20,19 @@ public class PlacePieceCommand : ICommand
   public void Execute()
   {
     _piece.CellUnderPiece = _cell;
+    _piece.RedeployTimer = -1;
+
     CombatManager.Instance.PlayerOnBoardPieces.Add(_piece);
+    CombatManager.Instance.PlayerOffBoardPieces.Remove(_piece);
   }
 
   public void Undo()
   {
     _piece.CellUnderPiece = BoardManager.Graveyard;
+    _piece.RedeployTimer = 0;
+
     CombatManager.Instance.PlayerOnBoardPieces.Remove(_piece);
+    CombatManager.Instance.PlayerOffBoardPieces.Add(_piece);
 
     _cell.IsShadowed = _previousCellState;
   }

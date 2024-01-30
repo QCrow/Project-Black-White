@@ -4,7 +4,8 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
   public Button confirmButton;
-
+  public Button baseAttackButton;
+  public Button skillButton;
   public static UIManager Instance { get; private set; }
 
   void Awake()

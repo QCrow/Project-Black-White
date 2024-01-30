@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class Player
 {
-  public List<CharacterDataSO> ActiveCharacters = new List<CharacterDataSO>();
+  public List<Character> ActiveCharacters = new List<Character>();
 
-  public List<CharacterDataSO> AllCharacters = new List<CharacterDataSO>();
+  public List<Character> AllCharacters = new List<Character>();
 
   public int Money = 0;
-  public Player(List<CharacterDataSO> activeCharacters, List<CharacterDataSO> allCharacters)
+  public Player(List<Character> activeCharacters, List<Character> allCharacters)
   {
     ActiveCharacters = activeCharacters;
     AllCharacters = allCharacters;

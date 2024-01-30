@@ -1,6 +1,6 @@
 public class InitState : ICombatState
 {
-  public void EnterState(CombatManager manager)
+  public void EnterState()
   {
     // Initialize the game board
     BoardManager.Instance.InitializeBoard();
@@ -8,10 +8,10 @@ public class InitState : ICombatState
 
     // Init state only occurs once to initialize the board
     // Regardless of how many players are playing
-    manager.ChangeState(new SetupState());
+    CombatManager.Instance.ChangeState(new SetupState());
   }
 
-  public void ExitState(CombatManager manager) { }
+  public void ExitState() { }
 
-  public void UpdateState(CombatManager manager) { }
+  public void UpdateState() { }
 }

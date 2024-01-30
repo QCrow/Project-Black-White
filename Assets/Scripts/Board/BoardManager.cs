@@ -49,6 +49,8 @@ public class BoardManager : MonoBehaviour
 
   public void InitializeBoard()
   {
+    ShadowedCellsCount = 0;
+
     // Create the board structure
     CurrentBoard = new List<List<Cell>>();
 
@@ -83,7 +85,6 @@ public class BoardManager : MonoBehaviour
       CurrentBoard.Add(row);
     }
 
-    ShadowedCellsCount = 0;
   }
 
   public void MovePieceToCell(GameObject piece, GameObject newCell)
