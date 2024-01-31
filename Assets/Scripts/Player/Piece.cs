@@ -132,6 +132,8 @@ public abstract class Piece : MonoBehaviour
       Queue<Cell> queue = new Queue<Cell>();
       queue.Enqueue(CellUnderPiece);
 
+      int moveRange = CellUnderPiece.IsShadowed == IsShadowed ? _moveRange : 1;
+
       // Create a dictionary to keep track of visited cells and their distances
       Dictionary<Cell, int> distances = new Dictionary<Cell, int>();
       distances[CellUnderPiece] = 0;
@@ -148,7 +150,7 @@ public abstract class Piece : MonoBehaviour
         List<Cell> currentPath = paths[currentCell];
 
         // Check if the current distance is within the piece's movement range
-        if (currentDistance <= _moveRange)
+        if (currentDistance <= moveRange)
         {
           // Add the current cell and its path to the dictionary of available moves with paths
           availableMovesWithPaths[currentCell] = currentPath;
@@ -159,8 +161,6 @@ public abstract class Piece : MonoBehaviour
             // Check if the neighbor is not already visited and is passable
             if (!distances.ContainsKey(neighbor) && neighbor.IsPassable())
             {
-              if (currentCell != CellUnderPiece && neighbor.IsShadowed != this.IsShadowed) continue;
-
               queue.Enqueue(neighbor);
               distances[neighbor] = currentDistance + 1;
 
@@ -177,6 +177,8 @@ public abstract class Piece : MonoBehaviour
     return availableMovesWithPaths;
   }
 
+  //TODO: This method might need to be moved to a different class
+  //TODO: Diagonal projectiles and directional input still need to be handled
   public virtual Dictionary<Cell, List<Cell>> GetAvailableTargets(SkillSO skill)
   {
     Dictionary<Cell, List<Cell>> availableTargets = new Dictionary<Cell, List<Cell>>();
@@ -209,24 +211,33 @@ public abstract class Piece : MonoBehaviour
 
       Queue<Cell> queue = new Queue<Cell>();
       Dictionary<Cell, List<Cell>> paths = new Dictionary<Cell, List<Cell>>();
-      List<Cell> currentPath = new List<Cell>();
+      paths[CellUnderPiece] = new List<Cell>();
+
+      Dictionary<Cell, int> numberOfHit = new Dictionary<Cell, int>();
+      numberOfHit[CellUnderPiece] = 0;
 
       queue.Enqueue(CellUnderPiece);
 
       while (queue.Count > 0)
       {
         Cell currentCell = queue.Dequeue();
+        int currentNumberOfHit = numberOfHit[currentCell];
+        List<Cell> currentPath = paths[currentCell];
 
         foreach (Cell neighbor in currentCell.GetNeighbors())
         {
-          if (availableTargets.ContainsKey(neighbor)) continue;
+          if (availableTargets.ContainsKey(neighbor)) continue; // If the neighbor is already a target, skip it
+
           if (absolutePossibleTargetCells.Contains(neighbor))
           {
-            availableTargets[neighbor] = currentPath;
-            if (!neighbor.BlocksProjectile())
+            if (!neighbor.IsEmpty) currentNumberOfHit++;
+            if (neighbor.GetTerrain().BlocksProjectile) currentNumberOfHit = int.MaxValue;
+            if (currentNumberOfHit < skill.MaximumTargets)
             {
               queue.Enqueue(neighbor);
             }
+            numberOfHit[neighbor] = currentNumberOfHit;
+            availableTargets[neighbor] = currentPath;
             List<Cell> newPath = new List<Cell>(currentPath);
             newPath.Add(neighbor);
             paths[neighbor] = newPath;
