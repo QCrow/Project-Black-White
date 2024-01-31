@@ -194,9 +194,9 @@ public abstract class Piece : MonoBehaviour
         }
       });
     }
-    else
+    else // If the skill is a projectile
     {
-      List<Cell> absolutePossibleTargetCells = new List<Cell>();
+      List<Cell> targetCells = new List<Cell>();
 
 
       foreach (var range in skill.TargetRange)
@@ -205,11 +205,12 @@ public abstract class Piece : MonoBehaviour
         if (BoardManager.Instance.IsWithinBoard(targetPosition.x, targetPosition.y))
         {
           Cell targetCell = BoardManager.Instance.CurrentBoard[targetPosition.x][targetPosition.y];
-          absolutePossibleTargetCells.Add(targetCell);
+          targetCells.Add(targetCell);
         }
       }
 
       Queue<Cell> queue = new Queue<Cell>();
+
       Dictionary<Cell, List<Cell>> paths = new Dictionary<Cell, List<Cell>>();
       paths[CellUnderPiece] = new List<Cell>();
 
@@ -228,7 +229,7 @@ public abstract class Piece : MonoBehaviour
         {
           if (availableTargets.ContainsKey(neighbor)) continue; // If the neighbor is already a target, skip it
 
-          if (absolutePossibleTargetCells.Contains(neighbor))
+          if (targetCells.Contains(neighbor))
           {
             if (!neighbor.IsEmpty) currentNumberOfHit++;
             if (neighbor.GetTerrain().BlocksProjectile) currentNumberOfHit = int.MaxValue;
