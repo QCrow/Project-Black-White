@@ -33,8 +33,7 @@ public class CombatManager : MonoBehaviour
     // Instantiate all player pieces and put them into the faraway graveyard cell
     foreach (var character in _playerData.ActiveCharacters)
     {
-      Piece piece = CharacterFactory.Instance.CreatePiece(character.PieceType);
-      piece.data = character;
+      Piece piece = CharacterFactory.Instance.CreatePiece(character);
 
       piece.CellUnderPiece = BoardManager.Graveyard;
       PlayerPieces.Add(piece);
@@ -43,7 +42,7 @@ public class CombatManager : MonoBehaviour
 
     this.Invoker = new CommandInvoker();
     // Set the state to the initial state
-    ChangeState(new InitState());
+    ChangeState(new InitCombatState());
   }
 
   private void Update()

@@ -36,10 +36,12 @@ public class CharacterFactory : MonoBehaviour
     }
   }
 
-  public Piece CreatePiece(PieceType pieceType)
+  public Piece CreatePiece(Character character)
   {
-    GameObject prefab = getPrefabFromType(pieceType);
+    GameObject prefab = getPrefabFromType(character.PieceType);
     Piece piece = Instantiate(prefab).GetComponent<Piece>();
+    piece.data = character;
+    piece.Initialize();
     return piece;
   }
 }

@@ -228,3 +228,4 @@ MonoBehaviour:
   color: {r: 1, g: 1, b: 1, a: 1}
   IndexPosition: {x: 0, y: 0}
   PieceOnCell: {fileID: 0}
+  CellTerrain: {fileID: 0}

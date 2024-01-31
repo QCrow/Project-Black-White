@@ -3,7 +3,6 @@ public enum PieceType
 {
   Enforcer,
   Sharpshooter,
-
   Artillery
 }
 

@@ -37,3 +37,30 @@ public class DeployCommand : ICommand
     _cell.IsShadowed = _previousCellState;
   }
 }
+
+public class MoveCommand : ICommand
+{
+  private Piece _piece;
+  private Cell _oldCell;
+  private Cell _newCell;
+  private int _previousActionPoints;
+
+  public MoveCommand(Piece piece, Cell newCell)
+  {
+    _piece = piece;
+    _oldCell = piece.CellUnderPiece;
+    _newCell = newCell;
+  }
+
+  public void Execute()
+  {
+    _piece.CellUnderPiece = _newCell;
+    _piece.CurrentActionPoints -= _piece.MovementCost;
+  }
+
+  public void Undo()
+  {
+    _piece.CellUnderPiece = _oldCell;
+    _piece.CurrentActionPoints = _previousActionPoints;
+  }
+}

@@ -7,26 +7,21 @@ using UnityEngine.UIElements;
 public abstract class Piece : MonoBehaviour
 {
   public Character data;
-  protected int _currentHitPoints;
 
-  protected int _currentActionPoints;
-  public int CurrentActionPoints
-  {
-    get => _currentActionPoints;
-    set
-    {
-      if (_currentActionPoints != value)
-      {
-        _currentActionPoints = value;
-        UpdateAvailableActions();
-      }
-    }
-  }
+  //? These stats are copied from the character data and could be modified during the combat
+  //? If we don't need them, then we can remove them after
+  [SerializeField] private int _maxHitPoints;
+  [SerializeField] private int _maxActionPoints;
+  [SerializeField] private int _unveiledActionPointRestoration;
+  [SerializeField] private int _moveRange;
 
-  private void UpdateAvailableActions()
-  {
+  [SerializeField] private int _turnsToRedeploy;
 
-  }
+
+
+
+  public int CurrentHitPoints;
+  public int CurrentActionPoints;
 
   public int RedeployTimer;
   public bool IsShadowed;
@@ -45,75 +40,128 @@ public abstract class Piece : MonoBehaviour
     }
   }
 
-  public bool IsMovable
-  {
-    get => _currentActionPoints - MovementCost >= 0 && !ActiveEffects.ContainsKey(EffectType.Stun) && !ActiveEffects.ContainsKey(EffectType.Root);
-  }
-
-  private int MovementCost
-  {
-    get => 1; //TODO: To be changed for logic processing
-  }
-
-  public Dictionary<EffectType, int> ActiveEffects = new Dictionary<EffectType, int>();
-  protected void Start()
-  {
-    Initialize();
-  }
-
-  protected virtual void Initialize()
-  {
-    _currentHitPoints = data.MaxHitPoints;
-    CurrentActionPoints = data.MaxActionPoints;
-
-    RedeployTimer = 0;
-  }
-
   protected virtual void OnPieceMoved(Cell oldCell, Cell newCell)
   {
     if (oldCell != null)
     {
       oldCell.PieceOnCell = null;
     }
-    Debug.Log(newCell);
+
     newCell.PieceOnCell = this;
     BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
   }
 
+  public bool IsMovable
+  {
+    get => CurrentActionPoints - MovementCost >= 0 && !ActiveEffects.ContainsKey(EffectType.Stun) && !ActiveEffects.ContainsKey(EffectType.Root);
+  }
+
+  public int MovementCost
+  {
+    get => 1; //TODO: To be changed for logic processing
+  }
+
+  public Dictionary<EffectType, int> ActiveEffects = new Dictionary<EffectType, int>();
+
+  private SkillSO _baseAttack;
+  private SkillSO _activeSkill;
+
+
+
+
+
+
+
+
+  public virtual void Initialize()
+  {
+    // Assign the character's data to the piece in case they need to be modified during the game
+    _maxHitPoints = data.MaxHitPoints;
+    _maxActionPoints = data.MaxActionPoints;
+    _unveiledActionPointRestoration = data.unveiledActionPointRestoration;
+    _moveRange = data.MoveRange;
+    _turnsToRedeploy = data.TurnsToRedeploy;
+
+    CurrentHitPoints = _maxHitPoints;
+    CurrentActionPoints = _maxActionPoints;
+
+    _baseAttack = data.BaseAttack;
+    _activeSkill = data.ActiveSkill;
+
+    RedeployTimer = 0;
+  }
+
   #region Update Piece Stats
+
   public void VeiledRefreshActions()
   {
-    CurrentActionPoints = data.MaxActionPoints;
+    CurrentActionPoints = _maxActionPoints;
   }
 
   public void UnveiledRefreshActions()
   {
-    CurrentActionPoints = Mathf.Max(data.MaxActionPoints, CurrentActionPoints + data.unveiledActionPointRestoration);
+    CurrentActionPoints = Mathf.Clamp(CurrentActionPoints + _unveiledActionPointRestoration, 0, _maxActionPoints);
   }
 
   public void ExhaustActions()
   {
     CurrentActionPoints = 0;
   }
-
-  public void DecreaseAP(int usedActionPoints)
-  {
-    CurrentActionPoints -= usedActionPoints;
-  }
-
-  public void IncreaseAP(int gainedActionPoints)
-  {
-    CurrentActionPoints += gainedActionPoints;
-  }
-
-  public void DecreaseHP(int damage)
-  {
-    _currentHitPoints -= damage;
-  }
-
-  public void IncreaseHP(int healing)
-  {
-    _currentHitPoints += healing;
-  }
   #endregion
+
+  public virtual Dictionary<Cell, List<Cell>> GetAvailableMovesWithPaths()
+  {
+    Dictionary<Cell, List<Cell>> availableMovesWithPaths = new Dictionary<Cell, List<Cell>>();
+
+    // Check if the piece has a cell assigned
+    if (CellUnderPiece != null)
+    {
+      // Create a queue to perform breadth-first search
+      Queue<Cell> queue = new Queue<Cell>();
+      queue.Enqueue(CellUnderPiece);
+
+      // Create a dictionary to keep track of visited cells and their distances
+      Dictionary<Cell, int> distances = new Dictionary<Cell, int>();
+      distances[CellUnderPiece] = 0;
+
+      // Create a dictionary to keep track of paths to cells
+      Dictionary<Cell, List<Cell>> paths = new Dictionary<Cell, List<Cell>>();
+      paths[CellUnderPiece] = new List<Cell>();
+
+      // Perform breadth-first search
+      while (queue.Count > 0)
+      {
+        Cell currentCell = queue.Dequeue();
+        int currentDistance = distances[currentCell];
+        List<Cell> currentPath = paths[currentCell];
+
+        // Check if the current distance is within the piece's movement range
+        if (currentDistance <= _moveRange)
+        {
+          // Add the current cell and its path to the dictionary of available moves with paths
+          availableMovesWithPaths[currentCell] = currentPath;
+
+          // Explore the neighboring cells
+          foreach (Cell neighbor in currentCell.GetNeighbors())
+          {
+            Debug.Log("Neighbor: " + neighbor);
+            // Check if the neighbor is not already visited and is passable
+            if (!distances.ContainsKey(neighbor) && neighbor.GetTerrain().IsPassable)
+            {
+              queue.Enqueue(neighbor);
+              distances[neighbor] = currentDistance + 1;
+
+              // Create a new path by copying the current path and adding the neighbor cell
+              List<Cell> newPath = new List<Cell>(currentPath);
+              newPath.Add(neighbor);
+              paths[neighbor] = newPath;
+            }
+          }
+        }
+      }
+    }
+    Debug.Log("Available moves with paths: " + availableMovesWithPaths.Count);
+    return availableMovesWithPaths;
+  }
+
 }

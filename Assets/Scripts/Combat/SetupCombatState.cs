@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-public class SetupState : ICombatState
+public class SetupCombatState : ICombatState
 {
   private List<ICommand> _commands;
   public bool ConfirmedForNextState;
@@ -28,7 +28,7 @@ public class SetupState : ICombatState
     UIManager.Instance.SetConfirmButtonInteractable(CombatManager.Instance.PlayerOffBoardPieces.Count == 0);
     if (ConfirmedForNextState)
     {
-      CombatManager.Instance.ChangeState(new PlayerTurnState());
+      CombatManager.Instance.ChangeState(new PlayerCombatState());
     }
   }
 

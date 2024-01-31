@@ -13,7 +13,7 @@ public class BoardManager : MonoBehaviour
 
   private List<List<bool>> _cellColors = new List<List<bool>>(); // TODO: This is just a temporary solution to make sure that the board is initialized correctly, this should be placed in BoardSetupSO eventually
 
-  [SerializeField] private int _size = 8;
+  public int Size = 8;
   public List<List<Cell>> CurrentBoard;
 
   public int ShadowedCellsCount;
@@ -32,15 +32,15 @@ public class BoardManager : MonoBehaviour
     // Instantiate faraway graveyard cell
     GameObject graveyardObject = Instantiate(CellPrefab, new Vector3(1000f, 1000f, 1000f), Quaternion.identity);
     Graveyard = graveyardObject.GetComponent<Cell>();
-    Graveyard.Initialize(-1, -1, true);
+    Graveyard.Initialize(-1, -1, TerrainType.Base, true);
     graveyardObject.name = "Graveyard";
 
     // TODO: This entire region's utility should be implemented into a BoardSetupSO data structure eventually
     #region TO BE CHANGED
-    for (int i = 0; i < _size; i++)
+    for (int i = 0; i < Size; i++)
     {
-      List<bool> row = new List<bool>(new bool[_size]);
-      row[_size - 1] = true;
+      List<bool> row = new List<bool>(new bool[Size]);
+      row[Size - 1] = true;
       _cellColors.Add(row);
     }
     // Now we are just setting up a mock cellColors List for testing purposes and mimicking the BoardSetupSO
@@ -55,14 +55,14 @@ public class BoardManager : MonoBehaviour
     CurrentBoard = new List<List<Cell>>();
 
     // Calculate the center offset
-    float offset = _size / 2;
-    bool isSizeOdd = _size % 2 == 1;
+    float offset = Size / 2;
+    bool isSizeOdd = Size % 2 == 1;
 
     // Populate the board with cells
-    for (int i = 0; i < _size; i++)
+    for (int i = 0; i < Size; i++)
     {
       List<Cell> row = new List<Cell>();
-      for (int j = 0; j < _size; j++)
+      for (int j = 0; j < Size; j++)
       {
         // Calculate the position of the cell in world space
         Vector3 position = isSizeOdd
@@ -74,7 +74,7 @@ public class BoardManager : MonoBehaviour
         Cell cellScript = cell.GetComponent<Cell>();
 
         // Initialize the cell
-        cellScript.Initialize(i, j, _cellColors[i][j]);
+        cellScript.Initialize(i, j, TerrainType.Base, _cellColors[i][j]);
         cell.transform.SetParent(this.transform); //? This might not be necessary (putting it in the parent), but only needed for organization purposes
         cell.name = "Cell_" + i + "_" + j;
 

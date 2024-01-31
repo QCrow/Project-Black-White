@@ -30,9 +30,9 @@ public class UIManager : MonoBehaviour
 
   public void OnConfirmButtonClick()
   {
-    if (CombatManager.Instance.CurrentState is SetupState)
+    if (CombatManager.Instance.CurrentState is SetupCombatState)
     {
-      SetupState state = (SetupState)CombatManager.Instance.CurrentState;
+      SetupCombatState state = (SetupCombatState)CombatManager.Instance.CurrentState;
       state.ConfirmedForNextState = true;
     }
   }

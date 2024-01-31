@@ -15,5 +15,6 @@ public class CharacterBaseDataSO : ScriptableObject
 
   public int MoveRange;
 
+  public SkillSO BaseAttack;
   public List<SkillSO> AllSkills = new List<SkillSO>();
 }

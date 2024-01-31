@@ -14,8 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: EnforcerName
   PieceType: 0
-  MaxHitPoints: 0
-  MaxActionPoints: 0
-  unveiledActionPointRestoration: 0
-  turnsToRedeploy: 0
+  MaxHitPoints: 100
+  MaxActionPoints: 100
+  unveiledActionPointRestoration: 1
+  turnsToRedeploy: 1
   MoveRange: 3
+  BaseAttack: {fileID: 11400000, guid: f534a8df8b3e84cf1aab1fafaf3c35f1, type: 2}
+  AllSkills:
+  - {fileID: 11400000, guid: 00168dfb663da4287a00fe7061994920, type: 2}

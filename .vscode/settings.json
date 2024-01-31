@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Project-Black-White.sln"
+    "dotnet.defaultSolution": "Shadow Scape.sln"
 }
