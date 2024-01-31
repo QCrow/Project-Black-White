@@ -12,17 +12,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0ff8cb0dba3a2342bfd0e369f62338e, type: 3}
   m_Name: Enforcer Skill1
   m_EditorClassIdentifier: 
-  SkillName: 
-  ActionPointCost: 0
+  SkillName: Assault
+  ActionPointCost: 2
   Cooldown: 0
-  TargetRange: []
+  IsDirectional: 0
+  TargetRange:
+  - {x: 1, y: 0}
+  - {x: 2, y: 0}
+  - {x: 3, y: 0}
+  - {x: 4, y: 0}
+  - {x: -1, y: 0}
+  - {x: -2, y: 0}
+  - {x: -3, y: 0}
+  - {x: -4, y: 0}
+  - {x: 0, y: 1}
+  - {x: 0, y: 2}
+  - {x: 0, y: 3}
+  - {x: 0, y: 4}
+  - {x: 0, y: -1}
+  - {x: 0, y: -2}
+  - {x: 0, y: -3}
+  - {x: 0, y: -4}
   TargetArea: []
-  MaximumTargets: 0
+  MaximumTargets: 1
   IsPassive: 0
   TargetRequired: 0
-  IsProjectile: 0
-  LeavesTrail: 0
-  Damage: 0
-  Effects: 
-  EffectValues: 
+  IsProjectile: 1
+  LeavesTrail: 1
+  Damage: 3
+  Effects: 03000000
+  EffectValues: e8030000
   SkillUpgrades: []

@@ -23,8 +23,16 @@ public class Cell : MonoBehaviour
 
   public Vector2Int IndexPosition = new(0, 0);
   public Piece PieceOnCell;
+  public Enemy EnemyOnCell;
+
+  public bool IsEmpty => PieceOnCell == null && EnemyOnCell == null;
+
   private Renderer _renderer;
   private MaterialPropertyBlock _propBlock;
+
+  private bool _isHovered = false;
+  private bool _isHighlighted = false;
+  private Color _currentHighlightColor;
 
   public override string ToString()
   {
@@ -106,6 +114,16 @@ public class Cell : MonoBehaviour
     return neighbors;
   }
 
+  public bool IsPassable()
+  {
+    return this.IsEmpty && GetComponent<CellTerrain>().IsPassable;
+  }
+
+  public bool BlocksProjectile()
+  {
+    return !this.IsEmpty || GetComponent<CellTerrain>().BlocksProjectile;
+  }
+
   public void SetHighlight(Color color)
   {
     Transform highlight = transform.Find("Highlight");
@@ -120,6 +138,8 @@ public class Cell : MonoBehaviour
         highlightRenderer.SetPropertyBlock(highlightPropBlock);
       }
       highlight.gameObject.SetActive(true);
+      _isHighlighted = true;
+      _currentHighlightColor = color;
     }
   }
 
@@ -129,6 +149,27 @@ public class Cell : MonoBehaviour
     if (highlight != null)
     {
       highlight.gameObject.SetActive(false);
+    }
+    _isHighlighted = false;
+  }
+
+
+  public void ToggleHovered()
+  {
+    _isHovered = !_isHovered;
+    if (_isHovered)
+    {
+      if (_isHighlighted)
+      {
+        SetHighlight(_currentHighlightColor * 0.5f);
+      }
+    }
+    else
+    {
+      if (_isHighlighted)
+      {
+        SetHighlight(_currentHighlightColor * 2.0f);
+      }
     }
   }
 }

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
@@ -51,9 +53,19 @@ public abstract class Piece : MonoBehaviour
     BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
   }
 
-  public bool IsMovable
+  public bool CanMove
   {
     get => CurrentActionPoints - MovementCost >= 0 && !ActiveEffects.ContainsKey(EffectType.Stun) && !ActiveEffects.ContainsKey(EffectType.Root);
+  }
+
+  public bool CanAttack
+  {
+    get => CurrentActionPoints - _baseAttack.ActionPointCost >= 0 && !ActiveEffects.ContainsKey(EffectType.Stun);
+  }
+
+  public bool CanUseSkill
+  {
+    get => CurrentActionPoints - _activeSkill.ActionPointCost >= 0 && !ActiveEffects.ContainsKey(EffectType.Stun);
   }
 
   public int MovementCost
@@ -144,10 +156,11 @@ public abstract class Piece : MonoBehaviour
           // Explore the neighboring cells
           foreach (Cell neighbor in currentCell.GetNeighbors())
           {
-            Debug.Log("Neighbor: " + neighbor);
             // Check if the neighbor is not already visited and is passable
-            if (!distances.ContainsKey(neighbor) && neighbor.GetTerrain().IsPassable)
+            if (!distances.ContainsKey(neighbor) && neighbor.IsPassable())
             {
+              if (currentCell != CellUnderPiece && neighbor.IsShadowed != this.IsShadowed) continue;
+
               queue.Enqueue(neighbor);
               distances[neighbor] = currentDistance + 1;
 
@@ -160,8 +173,67 @@ public abstract class Piece : MonoBehaviour
         }
       }
     }
-    Debug.Log("Available moves with paths: " + availableMovesWithPaths.Count);
+    availableMovesWithPaths.Remove(CellUnderPiece);
     return availableMovesWithPaths;
   }
 
+  public virtual Dictionary<Cell, List<Cell>> GetAvailableTargets(SkillSO skill)
+  {
+    Dictionary<Cell, List<Cell>> availableTargets = new Dictionary<Cell, List<Cell>>();
+    if (!skill.IsProjectile)
+    {
+      skill.TargetRange.ForEach(range =>
+      {
+        Vector2Int targetPosition = new Vector2Int(CellUnderPiece.IndexPosition.x + range.x, CellUnderPiece.IndexPosition.y + range.y);
+        if (BoardManager.Instance.IsWithinBoard(targetPosition.x, targetPosition.y))
+        {
+          Cell targetCell = BoardManager.Instance.CurrentBoard[targetPosition.x][targetPosition.y];
+          availableTargets[targetCell] = new List<Cell>();
+        }
+      });
+    }
+    else
+    {
+      List<Cell> absolutePossibleTargetCells = new List<Cell>();
+
+
+      foreach (var range in skill.TargetRange)
+      {
+        Vector2Int targetPosition = new Vector2Int(CellUnderPiece.IndexPosition.x + range.x, CellUnderPiece.IndexPosition.y + range.y);
+        if (BoardManager.Instance.IsWithinBoard(targetPosition.x, targetPosition.y))
+        {
+          Cell targetCell = BoardManager.Instance.CurrentBoard[targetPosition.x][targetPosition.y];
+          absolutePossibleTargetCells.Add(targetCell);
+        }
+      }
+
+      Queue<Cell> queue = new Queue<Cell>();
+      Dictionary<Cell, List<Cell>> paths = new Dictionary<Cell, List<Cell>>();
+      List<Cell> currentPath = new List<Cell>();
+
+      queue.Enqueue(CellUnderPiece);
+
+      while (queue.Count > 0)
+      {
+        Cell currentCell = queue.Dequeue();
+
+        foreach (Cell neighbor in currentCell.GetNeighbors())
+        {
+          if (availableTargets.ContainsKey(neighbor)) continue;
+          if (absolutePossibleTargetCells.Contains(neighbor))
+          {
+            availableTargets[neighbor] = currentPath;
+            if (!neighbor.BlocksProjectile())
+            {
+              queue.Enqueue(neighbor);
+            }
+            List<Cell> newPath = new List<Cell>(currentPath);
+            newPath.Add(neighbor);
+            paths[neighbor] = newPath;
+          }
+        }
+      }
+    }
+    return availableTargets;
+  }
 }

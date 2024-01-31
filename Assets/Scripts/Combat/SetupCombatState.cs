@@ -28,6 +28,7 @@ public class SetupCombatState : ICombatState
     UIManager.Instance.SetConfirmButtonInteractable(CombatManager.Instance.PlayerOffBoardPieces.Count == 0);
     if (ConfirmedForNextState)
     {
+      UIManager.Instance.SetConfirmButtonActive(false);
       CombatManager.Instance.ChangeState(new PlayerCombatState());
     }
   }
@@ -64,6 +65,5 @@ public class SetupCombatState : ICombatState
 
     _commands.Add(command);
     CombatManager.Instance.PlayerOffBoardPieces.Remove(pieceToPlace);
-
   }
 }

@@ -40,7 +40,10 @@ public class BoardManager : MonoBehaviour
     for (int i = 0; i < Size; i++)
     {
       List<bool> row = new List<bool>(new bool[Size]);
-      row[Size - 1] = true;
+      for (int j = Size / 2; j < Size; j++)
+      {
+        row[j] = true;
+      }
       _cellColors.Add(row);
     }
     // Now we are just setting up a mock cellColors List for testing purposes and mimicking the BoardSetupSO
@@ -112,5 +115,10 @@ public class BoardManager : MonoBehaviour
     {
       ShadowedCellsCount--;
     }
+  }
+
+  public bool IsWithinBoard(int x, int y)
+  {
+    return x >= 0 && x < Size && y >= 0 && y < Size;
   }
 }

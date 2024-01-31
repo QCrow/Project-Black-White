@@ -13,16 +13,22 @@ MonoBehaviour:
   m_Name: Enforcer Base Attack
   m_EditorClassIdentifier: 
   SkillName: Base Attack
-  IsPassive: 0
-  Damage: 0
-  TargetRequired: 0
-  IsProjectile: 0
-  MaximumTargets: 0
-  LeavesTrail: 0
-  TargetRange: {x: 0, y: 0}
-  TargetArea: {x: 0, y: 0}
-  ActionPointCost: 0
+  ActionPointCost: 1
   Cooldown: 0
-  Effects: 
-  EffectValues: 
+  IsDirectional: 0
+  TargetRange:
+  - {x: 0, y: 1}
+  - {x: 0, y: -1}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  TargetArea:
+  - {x: 0, y: 0}
+  MaximumTargets: 1
+  IsPassive: 0
+  TargetRequired: 1
+  IsProjectile: 0
+  LeavesTrail: 0
+  Damage: 2
+  Effects: 00000000
+  EffectValues: 01000000
   SkillUpgrades: []

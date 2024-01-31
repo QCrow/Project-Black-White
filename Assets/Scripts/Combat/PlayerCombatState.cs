@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.UI;
+using UnityEngine.UI;
 
 public enum ActionSelectionState
 {
@@ -14,16 +16,29 @@ public enum ActionSelectionState
 public class PlayerCombatState : ICombatState
 {
   private Piece _selectedPiece;
-  private List<Cell> _highlightedCells = new List<Cell>();
-  public List<Cell> HighlightedCells
+  public Piece SelectedPiece
   {
-    get => _highlightedCells;
+    get => _selectedPiece;
     set
     {
-      if (_highlightedCells != value)
+      if (_selectedPiece != value)
       {
-        _highlightedCells = value;
-        foreach (var cell in _highlightedCells)
+        _selectedPiece = value;
+        UIManager.Instance.SetActionButtonsInteractable(_selectedPiece != null);
+      }
+    }
+  }
+
+  private Dictionary<Cell, List<Cell>> _possibleTargetCellsWithPaths = new Dictionary<Cell, List<Cell>>();
+  public Dictionary<Cell, List<Cell>> PossibleTargetCellsWithPaths
+  {
+    get => _possibleTargetCellsWithPaths;
+    set
+    {
+      if (_possibleTargetCellsWithPaths != value)
+      {
+        _possibleTargetCellsWithPaths = value;
+        foreach (var cell in _possibleTargetCellsWithPaths.Keys)
         {
           switch (ActionSelectionState)
           {
@@ -51,24 +66,23 @@ public class PlayerCombatState : ICombatState
     {
       if (_actionSelectionState != value)
       {
+        foreach (var cell in PossibleTargetCellsWithPaths.Keys)
+        {
+          cell.RemoveHighlight();
+        }
+        PossibleTargetCellsWithPaths.Clear();
+
         _actionSelectionState = value;
         switch (_actionSelectionState)
         {
-          case ActionSelectionState.None:
-            foreach (var cell in HighlightedCells)
-            {
-              cell.RemoveHighlight();
-            }
-            HighlightedCells.Clear();
-            break;
           case ActionSelectionState.Move:
-            HighlightedCells = new List<Cell>(_selectedPiece.GetAvailableMovesWithPaths().Keys);
+            PossibleTargetCellsWithPaths = SelectedPiece.GetAvailableMovesWithPaths();
             break;
           case ActionSelectionState.Attack:
-            // HighlightedCells = _selectedPiece.GetAvailableAttackCells();
+            PossibleTargetCellsWithPaths = SelectedPiece.GetAvailableTargets(SelectedPiece.data.BaseAttack);
             break;
           case ActionSelectionState.Skill:
-            // HighlightedCells = _selectedPiece.GetAvailableSkillCells();
+            PossibleTargetCellsWithPaths = SelectedPiece.GetAvailableTargets(SelectedPiece.data.ActiveSkill);
             break;
         }
       }
@@ -83,6 +97,7 @@ public class PlayerCombatState : ICombatState
     RefreshPieces();
     DecreaseRedeployTimers();
     InputManager.OnCellSelected += HandleCellSelected;
+    InputManager.OnCellHovered += HandleCellHovered;
   }
 
   public void UpdateState()
@@ -93,52 +108,55 @@ public class PlayerCombatState : ICombatState
   public void ExitState()
   {
     InputManager.OnCellSelected -= HandleCellSelected;
+    InputManager.OnCellHovered -= HandleCellHovered;
   }
 
   private void HandleCellSelected(Cell cell)
   {
     if (cell.PieceOnCell != null)
     {
-      _selectedPiece = cell.PieceOnCell;
-      if (_selectedPiece.IsMovable)
+      SelectedPiece = cell.PieceOnCell;
+      UIManager.Instance.SetAttackButtonInteractable(SelectedPiece.CanAttack);
+      UIManager.Instance.SetSkillButtonInteractable(SelectedPiece.CanUseSkill);
+      if (SelectedPiece.CanMove)
       {
         ActionSelectionState = ActionSelectionState.Move;
-      }
-      else
-      {
-        // TODO: Show other actions than move
-        // HighlightedCells = _selectedPiece.GetAvailableActions();
       }
     }
     else
     {
-      if (HighlightedCells.Contains(cell)) // We are clicking a highlighted cell, do the action that is currently selected
+      if (PossibleTargetCellsWithPaths.ContainsKey(cell)) // We are clicking a highlighted cell, do the action that is currently selected
       {
         switch (ActionSelectionState)
         {
           case ActionSelectionState.Move:
-            MoveCommand moveCommand = new MoveCommand(_selectedPiece, cell);
-            _moveCommandPerPiece.Add(_selectedPiece, moveCommand);
-            _allCommands.Add(moveCommand);
+            MoveCommand moveCommand = new MoveCommand(SelectedPiece, cell);
+            // _moveCommandPerPiece.Add(SelectedPiece, moveCommand);
+            // _allCommands.Add(moveCommand);
             CombatManager.Instance.Invoker.SetCommand(moveCommand);
             CombatManager.Instance.Invoker.ExecuteCommand();
             break;
           case ActionSelectionState.Attack:
-            // _selectedPiece.AttackCell(cell);
+            // SelectedPiece.AttackCell(cell);
             break;
           case ActionSelectionState.Skill:
-            // _selectedPiece.UseSkillOnCell(cell);
+            // SelectedPiece.UseSkillOnCell(cell);
             break;
         }
-        _selectedPiece = null;
-        _actionSelectionState = ActionSelectionState.None;
+        SelectedPiece = null;
+        ActionSelectionState = ActionSelectionState.None;
       }
       else // We are clicking a cell that is not highlighted, cancel the selection
       {
-        _selectedPiece = null;
-        _actionSelectionState = ActionSelectionState.None;
+        SelectedPiece = null;
+        ActionSelectionState = ActionSelectionState.None;
       }
     }
+  }
+
+  private void HandleCellHovered(Cell cell)
+  {
+    cell.ToggleHovered();
   }
 
   private void RefreshPieces()

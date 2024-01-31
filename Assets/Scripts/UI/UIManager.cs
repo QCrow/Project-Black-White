@@ -3,9 +3,9 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-  public Button confirmButton;
-  public Button baseAttackButton;
-  public Button skillButton;
+  [SerializeField] private Button _confirmButton;
+  [SerializeField] private Button _baseAttackButton;
+  [SerializeField] private Button _skillButton;
   public static UIManager Instance { get; private set; }
 
   void Awake()
@@ -22,9 +22,17 @@ public class UIManager : MonoBehaviour
 
   public void SetConfirmButtonInteractable(bool isInteractable)
   {
-    if (confirmButton != null)
+    if (_confirmButton != null)
     {
-      confirmButton.interactable = isInteractable;
+      _confirmButton.interactable = isInteractable;
+    }
+  }
+
+  public void SetConfirmButtonActive(bool isActive)
+  {
+    if (_confirmButton != null)
+    {
+      _confirmButton.gameObject.SetActive(isActive);
     }
   }
 
@@ -34,6 +42,52 @@ public class UIManager : MonoBehaviour
     {
       SetupCombatState state = (SetupCombatState)CombatManager.Instance.CurrentState;
       state.ConfirmedForNextState = true;
+    }
+  }
+
+  public void SetActionButtonsInteractable(bool isInteractable)
+  {
+    if (_baseAttackButton != null)
+    {
+      _baseAttackButton.interactable = isInteractable;
+    }
+    if (_skillButton != null)
+    {
+      _skillButton.interactable = isInteractable;
+    }
+  }
+
+  public void SetAttackButtonInteractable(bool isInteractable)
+  {
+    if (_baseAttackButton != null)
+    {
+      _baseAttackButton.interactable = isInteractable;
+    }
+  }
+
+  public void SetSkillButtonInteractable(bool isInteractable)
+  {
+    if (_skillButton != null)
+    {
+      _skillButton.interactable = isInteractable;
+    }
+  }
+
+  public void OnAttackButtonClick()
+  {
+    if (CombatManager.Instance.CurrentState is PlayerCombatState)
+    {
+      PlayerCombatState state = (PlayerCombatState)CombatManager.Instance.CurrentState;
+      state.ActionSelectionState = ActionSelectionState.Attack;
+    }
+  }
+
+  public void OnSkillButtonClick()
+  {
+    if (CombatManager.Instance.CurrentState is PlayerCombatState)
+    {
+      PlayerCombatState state = (PlayerCombatState)CombatManager.Instance.CurrentState;
+      state.ActionSelectionState = ActionSelectionState.Skill;
     }
   }
 }
