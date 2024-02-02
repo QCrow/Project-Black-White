@@ -182,7 +182,7 @@ public abstract class Piece : MonoBehaviour
   public virtual Dictionary<Cell, List<Cell>> GetAvailableTargets(SkillSO skill)
   {
     Dictionary<Cell, List<Cell>> availableTargets = new Dictionary<Cell, List<Cell>>();
-    if (!skill.IsProjectile)
+    if (!skill.IsProjectile) // If the skill is not a projectile (cannot be blocked)
     {
       skill.TargetRange.ForEach(range =>
       {
