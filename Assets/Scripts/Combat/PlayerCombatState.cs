@@ -29,16 +29,16 @@ public class PlayerCombatState : ICombatState
     }
   }
 
-  private Dictionary<Cell, List<Cell>> _possibleTargetCellsWithPaths = new Dictionary<Cell, List<Cell>>();
-  public Dictionary<Cell, List<Cell>> PossibleTargetCellsWithPaths
+  private Dictionary<Cell, List<Cell>> _possibleTargetsWithEffectRange = new Dictionary<Cell, List<Cell>>();
+  public Dictionary<Cell, List<Cell>> PossibleTargetsWithEffectRange
   {
-    get => _possibleTargetCellsWithPaths;
+    get => _possibleTargetsWithEffectRange;
     set
     {
-      if (_possibleTargetCellsWithPaths != value)
+      if (_possibleTargetsWithEffectRange != value)
       {
-        _possibleTargetCellsWithPaths = value;
-        foreach (var cell in _possibleTargetCellsWithPaths.Keys)
+        _possibleTargetsWithEffectRange = value;
+        foreach (var cell in _possibleTargetsWithEffectRange.Keys)
         {
           switch (ActionSelectionState)
           {
@@ -66,23 +66,23 @@ public class PlayerCombatState : ICombatState
     {
       if (_actionSelectionState != value)
       {
-        foreach (var cell in PossibleTargetCellsWithPaths.Keys)
+        foreach (var cell in PossibleTargetsWithEffectRange.Keys)
         {
           cell.RemoveHighlight();
         }
-        PossibleTargetCellsWithPaths.Clear();
+        PossibleTargetsWithEffectRange.Clear();
 
         _actionSelectionState = value;
         switch (_actionSelectionState)
         {
           case ActionSelectionState.Move:
-            PossibleTargetCellsWithPaths = SelectedPiece.GetAvailableMovesWithPaths();
+            PossibleTargetsWithEffectRange = SkillResolver.Instance.GetAvailableMovesWithPaths(SelectedPiece);
             break;
           case ActionSelectionState.Attack:
-            PossibleTargetCellsWithPaths = SelectedPiece.GetAvailableTargets(SelectedPiece.data.BaseAttack);
+            PossibleTargetsWithEffectRange = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.BaseAttack);
             break;
           case ActionSelectionState.Skill:
-            PossibleTargetCellsWithPaths = SelectedPiece.GetAvailableTargets(SelectedPiece.data.ActiveSkill);
+            PossibleTargetsWithEffectRange = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.ActiveSkill);
             break;
         }
       }
@@ -125,14 +125,12 @@ public class PlayerCombatState : ICombatState
     }
     else
     {
-      if (PossibleTargetCellsWithPaths.ContainsKey(cell)) // We are clicking a highlighted cell, do the action that is currently selected
+      if (PossibleTargetsWithEffectRange.ContainsKey(cell)) // We are clicking a highlighted cell, do the action that is currently selected
       {
         switch (ActionSelectionState)
         {
           case ActionSelectionState.Move:
             MoveCommand moveCommand = new MoveCommand(SelectedPiece, cell);
-            // _moveCommandPerPiece.Add(SelectedPiece, moveCommand);
-            // _allCommands.Add(moveCommand);
             CombatManager.Instance.Invoker.SetCommand(moveCommand);
             CombatManager.Instance.Invoker.ExecuteCommand();
             break;
@@ -156,7 +154,32 @@ public class PlayerCombatState : ICombatState
 
   private void HandleCellHovered(Cell cell)
   {
-    cell.ToggleHovered();
+    switch (ActionSelectionState)
+    {
+      case ActionSelectionState.Move:
+        cell.ToggleHovered();
+        break;
+      case ActionSelectionState.Attack:
+        if (PossibleTargetsWithEffectRange.ContainsKey(cell))
+        {
+          HandleTargetCellHovered(cell, SelectedPiece.data.BaseAttack);
+        }
+        break;
+      case ActionSelectionState.Skill:
+        if (PossibleTargetsWithEffectRange.ContainsKey(cell))
+        {
+          HandleTargetCellHovered(cell, SelectedPiece.data.ActiveSkill);
+        }
+        break;
+    }
+  }
+
+  private void HandleTargetCellHovered(Cell cell, SkillSO skill)
+  {
+    foreach (var pathCell in PossibleTargetsWithEffectRange[cell])
+    {
+      pathCell.ToggleTargetedHovered();
+    }
   }
 
   private void RefreshPieces()

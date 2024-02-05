@@ -31,6 +31,17 @@ public class Cell : MonoBehaviour
   private MaterialPropertyBlock _propBlock;
 
   private bool _isHovered = false;
+  public bool IsHovered
+  {
+    get => _isHovered;
+    set
+    {
+      if (_isHovered != value)
+      {
+        _isHovered = value;
+      }
+    }
+  }
   private bool _isHighlighted = false;
   private Color _currentHighlightColor;
 
@@ -157,18 +168,25 @@ public class Cell : MonoBehaviour
   public void ToggleHovered()
   {
     _isHovered = !_isHovered;
+  }
+
+  public void ToggleTargetedHovered()
+  {
+    _isHovered = !_isHovered;
     if (_isHovered)
     {
-      if (_isHighlighted)
-      {
-        SetHighlight(_currentHighlightColor * 0.5f);
-      }
+      SetHighlight(Color.yellow);
+
     }
     else
     {
       if (_isHighlighted)
       {
-        SetHighlight(_currentHighlightColor * 2.0f);
+        SetHighlight(Color.red);
+      }
+      else
+      {
+        RemoveHighlight();
       }
     }
   }

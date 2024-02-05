@@ -5,6 +5,7 @@ using System.Numerics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
+using UnityEngine.UIElements.Experimental;
 
 public abstract class Piece : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public abstract class Piece : MonoBehaviour
   [SerializeField] private int _maxHitPoints;
   [SerializeField] private int _maxActionPoints;
   [SerializeField] private int _unveiledActionPointRestoration;
-  [SerializeField] private int _moveRange;
+  public int MoveRange;
 
   [SerializeField] private int _turnsToRedeploy;
 
@@ -91,7 +92,7 @@ public abstract class Piece : MonoBehaviour
     _maxHitPoints = data.MaxHitPoints;
     _maxActionPoints = data.MaxActionPoints;
     _unveiledActionPointRestoration = data.unveiledActionPointRestoration;
-    _moveRange = data.MoveRange;
+    MoveRange = data.MoveRange;
     _turnsToRedeploy = data.TurnsToRedeploy;
 
     CurrentHitPoints = _maxHitPoints;
@@ -121,131 +122,5 @@ public abstract class Piece : MonoBehaviour
   }
   #endregion
 
-  public virtual Dictionary<Cell, List<Cell>> GetAvailableMovesWithPaths()
-  {
-    Dictionary<Cell, List<Cell>> availableMovesWithPaths = new Dictionary<Cell, List<Cell>>();
 
-    // Check if the piece has a cell assigned
-    if (CellUnderPiece != null)
-    {
-      // Create a queue to perform breadth-first search
-      Queue<Cell> queue = new Queue<Cell>();
-      queue.Enqueue(CellUnderPiece);
-
-      int moveRange = CellUnderPiece.IsShadowed == IsShadowed ? _moveRange : 1;
-
-      // Create a dictionary to keep track of visited cells and their distances
-      Dictionary<Cell, int> distances = new Dictionary<Cell, int>();
-      distances[CellUnderPiece] = 0;
-
-      // Create a dictionary to keep track of paths to cells
-      Dictionary<Cell, List<Cell>> paths = new Dictionary<Cell, List<Cell>>();
-      paths[CellUnderPiece] = new List<Cell>();
-
-      // Perform breadth-first search
-      while (queue.Count > 0)
-      {
-        Cell currentCell = queue.Dequeue();
-        int currentDistance = distances[currentCell];
-        List<Cell> currentPath = paths[currentCell];
-
-        // Check if the current distance is within the piece's movement range
-        if (currentDistance <= moveRange)
-        {
-          // Add the current cell and its path to the dictionary of available moves with paths
-          availableMovesWithPaths[currentCell] = currentPath;
-
-          // Explore the neighboring cells
-          foreach (Cell neighbor in currentCell.GetNeighbors())
-          {
-            // Check if the neighbor is not already visited and is passable
-            if (!distances.ContainsKey(neighbor) && neighbor.IsPassable())
-            {
-              queue.Enqueue(neighbor);
-              distances[neighbor] = currentDistance + 1;
-
-              // Create a new path by copying the current path and adding the neighbor cell
-              List<Cell> newPath = new List<Cell>(currentPath);
-              newPath.Add(neighbor);
-              paths[neighbor] = newPath;
-            }
-          }
-        }
-      }
-    }
-    availableMovesWithPaths.Remove(CellUnderPiece);
-    return availableMovesWithPaths;
-  }
-
-  //TODO: This method might need to be moved to a different class
-  //TODO: Diagonal projectiles and directional input still need to be handled
-  public virtual Dictionary<Cell, List<Cell>> GetAvailableTargets(SkillSO skill)
-  {
-    Dictionary<Cell, List<Cell>> availableTargets = new Dictionary<Cell, List<Cell>>();
-    if (!skill.IsProjectile) // If the skill is not a projectile (cannot be blocked)
-    {
-      skill.TargetRange.ForEach(range =>
-      {
-        Vector2Int targetPosition = new Vector2Int(CellUnderPiece.IndexPosition.x + range.x, CellUnderPiece.IndexPosition.y + range.y);
-        if (BoardManager.Instance.IsWithinBoard(targetPosition.x, targetPosition.y))
-        {
-          Cell targetCell = BoardManager.Instance.CurrentBoard[targetPosition.x][targetPosition.y];
-          availableTargets[targetCell] = new List<Cell>();
-        }
-      });
-    }
-    else // If the skill is a projectile
-    {
-      List<Cell> targetCells = new List<Cell>();
-
-
-      foreach (var range in skill.TargetRange)
-      {
-        Vector2Int targetPosition = new Vector2Int(CellUnderPiece.IndexPosition.x + range.x, CellUnderPiece.IndexPosition.y + range.y);
-        if (BoardManager.Instance.IsWithinBoard(targetPosition.x, targetPosition.y))
-        {
-          Cell targetCell = BoardManager.Instance.CurrentBoard[targetPosition.x][targetPosition.y];
-          targetCells.Add(targetCell);
-        }
-      }
-
-      Queue<Cell> queue = new Queue<Cell>();
-
-      Dictionary<Cell, List<Cell>> paths = new Dictionary<Cell, List<Cell>>();
-      paths[CellUnderPiece] = new List<Cell>();
-
-      Dictionary<Cell, int> numberOfHit = new Dictionary<Cell, int>();
-      numberOfHit[CellUnderPiece] = 0;
-
-      queue.Enqueue(CellUnderPiece);
-
-      while (queue.Count > 0)
-      {
-        Cell currentCell = queue.Dequeue();
-        int currentNumberOfHit = numberOfHit[currentCell];
-        List<Cell> currentPath = paths[currentCell];
-
-        foreach (Cell neighbor in currentCell.GetNeighbors())
-        {
-          if (availableTargets.ContainsKey(neighbor)) continue; // If the neighbor is already a target, skip it
-
-          if (targetCells.Contains(neighbor))
-          {
-            if (!neighbor.IsEmpty) currentNumberOfHit++;
-            if (neighbor.GetTerrain().BlocksProjectile) currentNumberOfHit = int.MaxValue;
-            if (currentNumberOfHit < skill.MaximumTargets)
-            {
-              queue.Enqueue(neighbor);
-            }
-            numberOfHit[neighbor] = currentNumberOfHit;
-            availableTargets[neighbor] = currentPath;
-            List<Cell> newPath = new List<Cell>(currentPath);
-            newPath.Add(neighbor);
-            paths[neighbor] = newPath;
-          }
-        }
-      }
-    }
-    return availableTargets;
-  }
 }
