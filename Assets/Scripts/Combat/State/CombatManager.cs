@@ -7,11 +7,11 @@ public class CombatManager : MonoBehaviour
   public CommandInvoker Invoker;
 
   private Player _playerData;
-  public List<Piece> PlayerPieces = new List<Piece>();
-  public List<Piece> PlayerOnBoardPieces = new List<Piece>();
-  public List<Piece> PlayerOffBoardPieces = new List<Piece>();
+  public List<Ally> PlayerPieces = new List<Ally>();
+  public List<Ally> PlayerOnBoardPieces = new List<Ally>();
+  public List<Ally> PlayerOffBoardPieces = new List<Ally>();
 
-  public List<Piece> EnemyPieces = new List<Piece>();
+  public List<Enemy> EnemyPieces = new List<Enemy>();
 
   public ICombatState CurrentState { get; private set; }
   // Event system for when the current state changes
@@ -33,15 +33,15 @@ public class CombatManager : MonoBehaviour
     // Instantiate all player pieces and put them into the faraway graveyard cell
     foreach (var character in _playerData.ActiveCharacters)
     {
-      Piece piece = CharacterFactory.Instance.CreatePiece(character);
+      Ally playerPiece = PieceFactory.Instance.CreatePiece(character);
 
-      piece.CellUnderPiece = BoardManager.Graveyard;
-      PlayerPieces.Add(piece);
-      PlayerOffBoardPieces.Add(piece);
+      playerPiece.CellUnderPiece = BoardManager.Graveyard;
+      PlayerPieces.Add(playerPiece);
+      PlayerOffBoardPieces.Add(playerPiece);
     }
 
     this.Invoker = new CommandInvoker();
-    // Set the state to the initial state
+
     ChangeState(new InitCombatState());
   }
 

@@ -4,11 +4,11 @@ public class Character
 {
   public string Name;
 
-  public PieceType PieceType;
+  public AllyType Type;
   public int MaxHitPoints;
   public int MaxActionPoints;
 
-  public int unveiledActionPointRestoration;
+  public int UnveiledActionPointRestoration;
   public int MoveRange;
 
   public int TurnsToRedeploy;
@@ -26,10 +26,10 @@ public class Character
   public Character(CharacterBaseDataSO characterBaseData)
   {
     Name = characterBaseData.Name;
-    PieceType = characterBaseData.PieceType;
+    Type = characterBaseData.Type;
     MaxHitPoints = characterBaseData.MaxHitPoints;
     MaxActionPoints = characterBaseData.MaxActionPoints;
-    unveiledActionPointRestoration = characterBaseData.unveiledActionPointRestoration;
+    UnveiledActionPointRestoration = characterBaseData.UnveiledActionPointRestoration;
     MoveRange = characterBaseData.MoveRange;
     TurnsToRedeploy = characterBaseData.turnsToRedeploy;
     AllSkills = characterBaseData.AllSkills;

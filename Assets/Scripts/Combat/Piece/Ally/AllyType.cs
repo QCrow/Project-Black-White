@@ -1,5 +1,5 @@
 using UnityEngine;
-public enum PieceType
+public enum AllyType
 {
   Enforcer,
   Sharpshooter,

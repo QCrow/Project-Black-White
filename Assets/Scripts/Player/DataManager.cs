@@ -14,15 +14,12 @@ public class DataManager : MonoBehaviour
 
   private void Awake()
   {
-    if (Instance == null)
+    if (Instance != null)
     {
-      Instance = this;
-      DontDestroyOnLoad(gameObject);
+      Destroy(Instance.gameObject);
     }
-    else
-    {
-      Destroy(gameObject);
-    }
+    Instance = this;
+    DontDestroyOnLoad(gameObject);
 
     // ! This responsibility might be moved to a different class
     Characters = CharacterBaseDatas.Select(data => new Character(data)).ToList();

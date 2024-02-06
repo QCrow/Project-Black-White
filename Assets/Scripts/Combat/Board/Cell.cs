@@ -4,28 +4,27 @@ using UnityEngine;
 
 public class Cell : MonoBehaviour
 {
-  private bool _isShadowed = false;
-  public bool IsShadowed
+  private bool _isShadow = false;
+  public bool IsShadow
   {
-    get => _isShadowed;
+    get => _isShadow;
     set
     {
-      if (_isShadowed != value)
+      if (_isShadow != value)
       {
-        _isShadowed = value;
+        _isShadow = value;
         UpdateCellDisplay();
-        BoardManager.Instance.UpdateShadowedCellsCount(_isShadowed);
+        BoardManager.Instance.UpdateShadowedCellsCount(_isShadow);
       }
     }
   }
 
-  [SerializeField] private Color color = Color.white;
+  private Color color = Color.white;
 
   public Vector2Int IndexPosition = new(0, 0);
   public Piece PieceOnCell;
-  public Enemy EnemyOnCell;
 
-  public bool IsEmpty => PieceOnCell == null && EnemyOnCell == null;
+  public bool IsEmpty => PieceOnCell == null;
 
   private Renderer _renderer;
   private MaterialPropertyBlock _propBlock;
@@ -60,7 +59,7 @@ public class Cell : MonoBehaviour
   public void Initialize(int x, int y, TerrainType terrainType, bool isShadowed)
   {
     SetIndexPosition(x, y);
-    this._isShadowed = isShadowed;
+    this._isShadow = isShadowed;
     SetTerrain(terrainType);
     if (isShadowed)
     {
@@ -98,7 +97,7 @@ public class Cell : MonoBehaviour
   public void UpdateCellDisplay()
   {
     _renderer.GetPropertyBlock(_propBlock);
-    _propBlock.SetFloat("_IsInverted", IsShadowed ? 1.0f : 0.0f); // Assuming _IsInverted is your boolean property in Shader Graph
+    _propBlock.SetFloat("_IsInverted", IsShadow ? 1.0f : 0.0f); // Assuming _IsInverted is your boolean property in Shader Graph
     _propBlock.SetColor("_Color", color);
     _renderer.SetPropertyBlock(_propBlock);
   }
@@ -127,12 +126,12 @@ public class Cell : MonoBehaviour
 
   public bool IsPassable()
   {
-    return this.IsEmpty && GetComponent<CellTerrain>().IsPassable;
+    return IsEmpty && GetComponent<CellTerrain>().IsPassable;
   }
 
   public bool BlocksProjectile()
   {
-    return !this.IsEmpty || GetComponent<CellTerrain>().BlocksProjectile;
+    return !IsEmpty || GetComponent<CellTerrain>().BlocksProjectile;
   }
 
   public void SetHighlight(Color color)

@@ -5,11 +5,11 @@ using UnityEngine;
 public class CharacterBaseDataSO : ScriptableObject
 {
   public string Name;
-  public PieceType PieceType;
+  public AllyType Type;
 
   public int MaxHitPoints;
   public int MaxActionPoints;
-  public int unveiledActionPointRestoration;
+  public int UnveiledActionPointRestoration;
 
   public int turnsToRedeploy;
 

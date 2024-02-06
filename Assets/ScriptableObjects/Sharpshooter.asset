@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Sharpshooter
   m_EditorClassIdentifier: 
   Name: Sharpshooter
-  PieceType: 1
-  MaxHitPoints: 100
-  MaxActionPoints: 100
-  unveiledActionPointRestoration: 2
+  Type: 1
+  MaxHitPoints: 10
+  MaxActionPoints: 3
+  UnveiledActionPointRestoration: 1
   turnsToRedeploy: 0
-  MoveRange: 1
+  MoveRange: 2
   BaseAttack: {fileID: 11400000, guid: cffccfc7d30ef4ca4859632f774784e2, type: 2}
   AllSkills:
   - {fileID: 11400000, guid: 65ce43f194c4042b4add1465d23c9ea1, type: 2}

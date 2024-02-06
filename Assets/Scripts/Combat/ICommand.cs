@@ -6,15 +6,15 @@ public interface ICommand
 
 public class DeployCommand : ICommand
 {
-  private Piece _piece;
+  private Ally _piece;
   private Cell _cell;
   private bool _previousCellState;
 
-  public DeployCommand(Piece piece, Cell cell)
+  public DeployCommand(Ally piece, Cell cell)
   {
     _piece = piece;
     _cell = cell;
-    _previousCellState = _cell.IsShadowed;
+    _previousCellState = _cell.IsShadow;
   }
 
   public void Execute()
@@ -34,18 +34,18 @@ public class DeployCommand : ICommand
     CombatManager.Instance.PlayerOnBoardPieces.Remove(_piece);
     CombatManager.Instance.PlayerOffBoardPieces.Add(_piece);
 
-    _cell.IsShadowed = _previousCellState;
+    _cell.IsShadow = _previousCellState;
   }
 }
 
 public class MoveCommand : ICommand
 {
-  private Piece _piece;
+  private Ally _piece;
   private Cell _oldCell;
   private Cell _newCell;
   private int _previousActionPoints;
 
-  public MoveCommand(Piece piece, Cell newCell)
+  public MoveCommand(Ally piece, Cell newCell)
   {
     _piece = piece;
     _oldCell = piece.CellUnderPiece;

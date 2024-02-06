@@ -121,9 +121,4 @@ public class BoardManager : MonoBehaviour
   {
     return x >= 0 && x < Size && y >= 0 && y < Size;
   }
-
-  public static List<Vector2Int> RelativeToAbsolutePosition(List<Vector2Int> relativePositions, Vector2Int reference)
-  {
-    return relativePositions.Select(relativePosition => relativePosition + reference).ToList();
-  }
 }

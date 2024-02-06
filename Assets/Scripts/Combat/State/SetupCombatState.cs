@@ -36,12 +36,15 @@ public class SetupCombatState : ICombatState
   private void HandleCellSelected(Cell cell)
   {
     ICommand command;
-
-    Piece pieceOnCell = null; // Existing piece on the cell
+    Ally playerPieceOnCell = null;
     if (cell.PieceOnCell != null)
     {
-      pieceOnCell = cell.PieceOnCell;
-      int foundIndex = CombatManager.Instance.PlayerOnBoardPieces.IndexOf(pieceOnCell);
+      Debug.Log("Piece on cell!");
+      if (!CombatManager.Instance.PlayerOnBoardPieces.Contains(cell.PieceOnCell)) return;
+
+      playerPieceOnCell = (Ally)cell.PieceOnCell;
+
+      int foundIndex = CombatManager.Instance.PlayerOnBoardPieces.IndexOf(playerPieceOnCell);
       if (foundIndex >= 0)
       {
         // Remove the piece from the player pieces list
@@ -50,20 +53,22 @@ public class SetupCombatState : ICombatState
         CombatManager.Instance.Invoker.UndoCommand();
         _commands.RemoveAt(foundIndex);
 
-        CombatManager.Instance.PlayerOffBoardPieces.Add(pieceOnCell);
+        CombatManager.Instance.PlayerOffBoardPieces.Add(playerPieceOnCell);
       }
     }
     if (CombatManager.Instance.PlayerOffBoardPieces.Count == 0) return;
 
-    Piece pieceToPlace = CombatManager.Instance.PlayerOffBoardPieces[0];
-    if (pieceToPlace == pieceOnCell) return; // If the place to place is the same piece that we just removed, do nothing
-    if (pieceToPlace.IsShadowed != cell.IsShadowed) return;
+    Ally playerPieceToPlace = CombatManager.Instance.PlayerOffBoardPieces[0];
+    Debug.Log("Piece to place: " + playerPieceToPlace.data.Name);
+    if (playerPieceToPlace == playerPieceOnCell) return; // If the place to place is the same piece that we just removed, do nothing
+    if (playerPieceToPlace.IsShadow != cell.IsShadow) return;
 
-    command = new DeployCommand(pieceToPlace, cell);
+    Debug.Log("Setting up command");
+    command = new DeployCommand(playerPieceToPlace, cell);
     CombatManager.Instance.Invoker.SetCommand(command);
     CombatManager.Instance.Invoker.ExecuteCommand();
 
     _commands.Add(command);
-    CombatManager.Instance.PlayerOffBoardPieces.Remove(pieceToPlace);
+    CombatManager.Instance.PlayerOffBoardPieces.Remove(playerPieceToPlace);
   }
 }

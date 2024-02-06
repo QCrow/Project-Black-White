@@ -10,9 +10,10 @@ public class SkillSO : ScriptableObject
   public int Cooldown = 0;
 
   [Header("Targeting")]
-  public bool IsDirectional;
   public List<Vector2Int> TargetRange;
   public List<Vector2Int> TargetArea;
+
+  public int MinimumTargets = 0;
   public int MaximumTargets;
 
   [Header("Type")]

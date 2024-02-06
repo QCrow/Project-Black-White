@@ -117,9 +117,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 3199827606608988059}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b99dad5bbb63584095e0e327616e4df, type: 3}
+  m_Script: {fileID: 11500000, guid: 9afdcc34d69ff194eabe31ef170c9bb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PossibleMoves: {fileID: 11400000, guid: 7f2d18a3f3d7fd54a9607fed433bf261, type: 2}
-  _hitPoints: 5
-  IsShadowed: 1
+  _maxHitPoints: 0
+  _maxActionPoints: 0
+  _unveiledActionPointRestoration: 0
+  MoveRange: 0
+  _turnsToRedeploy: 0
+  CurrentHitPoints: 0
+  CurrentActionPoints: 0
+  RedeployTimer: 0
+  IsShadowed: 0

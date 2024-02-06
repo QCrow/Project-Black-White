@@ -15,8 +15,8 @@ public enum ActionSelectionState
 
 public class PlayerCombatState : ICombatState
 {
-  private Piece _selectedPiece;
-  public Piece SelectedPiece
+  private Ally _selectedPiece;
+  public Ally SelectedPiece
   {
     get => _selectedPiece;
     set
@@ -29,16 +29,16 @@ public class PlayerCombatState : ICombatState
     }
   }
 
-  private Dictionary<Cell, List<Cell>> _possibleTargetsWithEffectRange = new Dictionary<Cell, List<Cell>>();
-  public Dictionary<Cell, List<Cell>> PossibleTargetsWithEffectRange
+  private List<Cell> _possibleTargets = new List<Cell>();
+  public List<Cell> PossibleTargets
   {
-    get => _possibleTargetsWithEffectRange;
+    get => _possibleTargets;
     set
     {
-      if (_possibleTargetsWithEffectRange != value)
+      if (_possibleTargets != value)
       {
-        _possibleTargetsWithEffectRange = value;
-        foreach (var cell in _possibleTargetsWithEffectRange.Keys)
+        _possibleTargets = value;
+        foreach (var cell in _possibleTargets)
         {
           switch (ActionSelectionState)
           {
@@ -66,23 +66,23 @@ public class PlayerCombatState : ICombatState
     {
       if (_actionSelectionState != value)
       {
-        foreach (var cell in PossibleTargetsWithEffectRange.Keys)
+        foreach (var cell in PossibleTargets)
         {
           cell.RemoveHighlight();
         }
-        PossibleTargetsWithEffectRange.Clear();
+        PossibleTargets.Clear();
 
         _actionSelectionState = value;
         switch (_actionSelectionState)
         {
           case ActionSelectionState.Move:
-            PossibleTargetsWithEffectRange = SkillResolver.Instance.GetAvailableMovesWithPaths(SelectedPiece);
+            PossibleTargets = SkillResolver.Instance.GetAvailableMoves(SelectedPiece);
             break;
           case ActionSelectionState.Attack:
-            PossibleTargetsWithEffectRange = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.BaseAttack);
+            PossibleTargets = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.BaseAttack);
             break;
           case ActionSelectionState.Skill:
-            PossibleTargetsWithEffectRange = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.ActiveSkill);
+            PossibleTargets = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.ActiveSkill);
             break;
         }
       }
@@ -90,7 +90,7 @@ public class PlayerCombatState : ICombatState
   }
 
   private List<ICommand> _allCommands = new List<ICommand>();
-  private Dictionary<Piece, MoveCommand> _moveCommandPerPiece = new Dictionary<Piece, MoveCommand>();
+  private Dictionary<Ally, MoveCommand> _moveCommandPerPiece = new Dictionary<Ally, MoveCommand>();
 
   public void EnterState()
   {
@@ -115,17 +115,19 @@ public class PlayerCombatState : ICombatState
   {
     if (cell.PieceOnCell != null)
     {
-      SelectedPiece = cell.PieceOnCell;
+      if (cell.PieceOnCell is not Ally) return;
+      SelectedPiece = (Ally)cell.PieceOnCell;
       UIManager.Instance.SetAttackButtonInteractable(SelectedPiece.CanAttack);
       UIManager.Instance.SetSkillButtonInteractable(SelectedPiece.CanUseSkill);
       if (SelectedPiece.CanMove)
       {
+        Debug.Log("Can move");
         ActionSelectionState = ActionSelectionState.Move;
       }
     }
     else
     {
-      if (PossibleTargetsWithEffectRange.ContainsKey(cell)) // We are clicking a highlighted cell, do the action that is currently selected
+      if (PossibleTargets.Contains(cell)) // We are clicking a highlighted cell, do the action that is currently selected
       {
         switch (ActionSelectionState)
         {
@@ -160,13 +162,13 @@ public class PlayerCombatState : ICombatState
         cell.ToggleHovered();
         break;
       case ActionSelectionState.Attack:
-        if (PossibleTargetsWithEffectRange.ContainsKey(cell))
+        if (PossibleTargets.Contains(cell))
         {
           HandleTargetCellHovered(cell, SelectedPiece.data.BaseAttack);
         }
         break;
       case ActionSelectionState.Skill:
-        if (PossibleTargetsWithEffectRange.ContainsKey(cell))
+        if (PossibleTargets.Contains(cell))
         {
           HandleTargetCellHovered(cell, SelectedPiece.data.ActiveSkill);
         }
@@ -176,17 +178,13 @@ public class PlayerCombatState : ICombatState
 
   private void HandleTargetCellHovered(Cell cell, SkillSO skill)
   {
-    foreach (var pathCell in PossibleTargetsWithEffectRange[cell])
-    {
-      pathCell.ToggleTargetedHovered();
-    }
   }
 
   private void RefreshPieces()
   {
     foreach (var piece in CombatManager.Instance.PlayerOnBoardPieces)
     {
-      if (piece.IsShadowed == piece.CellUnderPiece.IsShadowed)
+      if (piece.IsShadow == piece.CellUnderPiece.IsShadow)
       {
         piece.VeiledRefreshActions();
       }

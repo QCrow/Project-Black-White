@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29fd2acfa2b228b428c70ba9dda3af3a, type: 3}
   m_Name: Enforcer
   m_EditorClassIdentifier: 
-  Name: EnforcerName
-  PieceType: 0
+  Name: Enforcer
+  Type: 0
   MaxHitPoints: 100
   MaxActionPoints: 100
-  unveiledActionPointRestoration: 1
+  UnveiledActionPointRestoration: 0
   turnsToRedeploy: 1
   MoveRange: 3
   BaseAttack: {fileID: 11400000, guid: f534a8df8b3e84cf1aab1fafaf3c35f1, type: 2}
