@@ -3,68 +3,103 @@ using UnityEngine;
 
 public abstract class Piece : MonoBehaviour
 {
-  public bool IsShadow { get; set; }
+    public bool IsShadow { get; set; }
 
-  public int MoveRange { get; set; }
+    protected int _moveRange;
 
-  private Cell _cellUnderPiece;
-  public Cell CellUnderPiece
-  {
-    get => _cellUnderPiece;
-    set
+    private Cell _cellUnderPiece;
+    public Cell CellUnderPiece
     {
-      if (_cellUnderPiece != value)
-      {
-        Cell oldCell = _cellUnderPiece;
-        _cellUnderPiece = value;
-        OnPieceMoved(oldCell, value);
-      }
+        get => _cellUnderPiece;
+        set
+        {
+            if (_cellUnderPiece != value)
+            {
+                Cell oldCell = _cellUnderPiece;
+                _cellUnderPiece = value;
+                OnPieceMoved(oldCell, value);
+            }
+        }
     }
-  }
-  protected virtual void OnPieceMoved(Cell oldCell, Cell newCell)
-  {
-    if (oldCell != null)
+    protected virtual void OnPieceMoved(Cell oldCell, Cell newCell)
     {
-      oldCell.PieceOnCell = null;
+        if (oldCell != null)
+        {
+            oldCell.PieceOnCell = null;
+        }
+
+        newCell.PieceOnCell = this;
+        BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
     }
 
-    newCell.PieceOnCell = this;
-    BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
-  }
 
+    protected int _maxHitPoints = 100;
+    protected int _currentHitPoints;
 
-  protected int _maxHitPoints = 100;
-  protected int _currentHitPoints;
-
-  public void takeDamage(int damage)
-  {
-    _currentHitPoints -= damage;
-    if (_currentHitPoints <= 0)
+    public void takeDamage(int damage)
     {
-      //TODO: Die
-      // Die();
+        _currentHitPoints -= damage;
+        if (_currentHitPoints <= 0)
+        {
+            //TODO: Die
+            // Die();
+        }
     }
-  }
 
-  public void heal(int heal)
-  {
-    _currentHitPoints += heal;
-    if (_currentHitPoints > _maxHitPoints)
+    public void heal(int heal)
     {
-      _currentHitPoints = _maxHitPoints;
+        _currentHitPoints += heal;
+        if (_currentHitPoints > _maxHitPoints)
+        {
+            _currentHitPoints = _maxHitPoints;
+        }
     }
-  }
 
-  public void resetHealth()
-  {
-    _currentHitPoints = _maxHitPoints;
-  }
+    public void resetHealth()
+    {
+        _currentHitPoints = _maxHitPoints;
+    }
 
-  protected Dictionary<EffectType, int> ActiveEffects = new Dictionary<EffectType, int>();
+    public virtual void Initialize()
+    {
+        resetHealth();
+    }
 
+    public virtual List<Cell> GetPossibleMoves()
+    {
+        List<Cell> availableMoves = new List<Cell>();
 
-  public virtual void Initialize()
-  {
-    resetHealth();
-  }
+        // BFS to find available moves
+        Queue<Cell> queue = new Queue<Cell>();
+        queue.Enqueue(CellUnderPiece);
+
+        // If the cell under the piece is not the same color as piece, then the piece movement is limited
+        // TODO: Instead of 1, implement this to be different for each character
+        int moveRange = CellUnderPiece.IsShadow == IsShadow ? _moveRange : 1;
+
+        Dictionary<Cell, int> distances = new Dictionary<Cell, int>();
+        distances[CellUnderPiece] = 0;
+
+        // Perform breadth-first search
+        while (queue.Count > 0)
+        {
+            Cell currentCell = queue.Dequeue();
+            int currentDistance = distances[currentCell];
+
+            if (currentDistance < moveRange)
+            {
+
+                foreach (Cell neighbor in currentCell.GetNeighbors())
+                {
+                    if (!distances.ContainsKey(neighbor) && neighbor.IsPassable())
+                    {
+                        queue.Enqueue(neighbor);
+                        distances[neighbor] = currentDistance + 1;
+                        availableMoves.Add(neighbor);
+                    }
+                }
+            }
+        }
+        return availableMoves;
+    }
 }

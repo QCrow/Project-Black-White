@@ -4,17 +4,17 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Character Base Data", menuName = "Scriptable Object/Character Base Data", order = 0)]
 public class CharacterBaseDataSO : ScriptableObject
 {
-  public string Name;
-  public AllyType Type;
+    public string Name;
+    public AllyType Type;
 
-  public int MaxHitPoints;
-  public int MaxActionPoints;
-  public int UnveiledActionPointRestoration;
+    public int MaxHitPoints;
+    public int MaxActionPoints;
+    public int UnveiledActionPointRestoration;
 
-  public int turnsToRedeploy;
+    public int turnsToRedeploy;
 
-  public int MoveRange;
+    public int MoveRange;
 
-  public SkillSO BaseAttack;
-  public List<SkillSO> AllSkills = new List<SkillSO>();
+    public SkillType BaseAttackType;
+    public List<SkillType> AllSkillTypes = new();
 }

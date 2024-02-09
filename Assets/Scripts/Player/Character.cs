@@ -2,41 +2,41 @@ using System.Collections.Generic;
 using UnityEngine;
 public class Character
 {
-  public string Name;
+    public string Name;
 
-  public AllyType Type;
-  public int MaxHitPoints;
-  public int MaxActionPoints;
+    public AllyType Type;
+    public int MaxHitPoints;
+    public int MaxActionPoints;
 
-  public int UnveiledActionPointRestoration;
-  public int MoveRange;
+    public int UnveiledActionPointRestoration;
+    public int MoveRange;
 
-  public int TurnsToRedeploy;
+    public int TurnsToRedeploy;
 
-  public SkillSO BaseAttack;
+    public Skill BaseAttack;
 
-  public List<SkillSO> AllSkills = new List<SkillSO>();
-
-
-  public List<SkillSO> UnlockedSkills = new List<SkillSO>();
-
-  public SkillSO ActiveSkill;
+    public List<SkillType> AllSkillTypes = new();
 
 
-  public Character(CharacterBaseDataSO characterBaseData)
-  {
-    Name = characterBaseData.Name;
-    Type = characterBaseData.Type;
-    MaxHitPoints = characterBaseData.MaxHitPoints;
-    MaxActionPoints = characterBaseData.MaxActionPoints;
-    UnveiledActionPointRestoration = characterBaseData.UnveiledActionPointRestoration;
-    MoveRange = characterBaseData.MoveRange;
-    TurnsToRedeploy = characterBaseData.turnsToRedeploy;
-    AllSkills = characterBaseData.AllSkills;
-    BaseAttack = characterBaseData.BaseAttack;
+    public List<SkillType> UnlockedSkillTypes = new();
 
-    //! This is for testing purposes only for now, eventually this will be handled by UI selection
-    UnlockedSkills.Add(characterBaseData.AllSkills[0]);
-    ActiveSkill = UnlockedSkills[0];
-  }
+    public Skill ActiveSkill;
+
+
+    public Character(CharacterBaseDataSO characterBaseData)
+    {
+        Name = characterBaseData.Name;
+        Type = characterBaseData.Type;
+        MaxHitPoints = characterBaseData.MaxHitPoints;
+        MaxActionPoints = characterBaseData.MaxActionPoints;
+        UnveiledActionPointRestoration = characterBaseData.UnveiledActionPointRestoration;
+        MoveRange = characterBaseData.MoveRange;
+        TurnsToRedeploy = characterBaseData.turnsToRedeploy;
+        AllSkillTypes = characterBaseData.AllSkillTypes;
+        BaseAttack = SkillFactory.CreateSkill(characterBaseData.BaseAttackType);
+
+        //! This is for testing purposes only for now, eventually this will be handled by UI selection
+        UnlockedSkillTypes.Add(characterBaseData.AllSkillTypes[0]);
+        ActiveSkill = SkillFactory.CreateSkill(UnlockedSkillTypes[0]);
+    }
 }

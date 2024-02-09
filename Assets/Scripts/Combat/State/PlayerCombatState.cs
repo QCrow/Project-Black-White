@@ -7,202 +7,161 @@ using UnityEngine.UI;
 
 public enum ActionSelectionState
 {
-  None,
-  Move,
-  Attack,
-  Skill
+    None,
+    Move,
+    Attack,
+    Skill
 }
 
 public class PlayerCombatState : ICombatState
 {
-  private Ally _selectedPiece;
-  public Ally SelectedPiece
-  {
-    get => _selectedPiece;
-    set
-    {
-      if (_selectedPiece != value)
-      {
-        _selectedPiece = value;
-        UIManager.Instance.SetActionButtonsInteractable(_selectedPiece != null);
-      }
-    }
-  }
+    private Ally _selectedAlly;
 
-  private List<Cell> _possibleTargets = new List<Cell>();
-  public List<Cell> PossibleTargets
-  {
-    get => _possibleTargets;
-    set
+    private ActionSelectionState _actionSelectionState;
+
+    public ActionSelectionState ActionSelectionState
     {
-      if (_possibleTargets != value)
-      {
-        _possibleTargets = value;
-        foreach (var cell in _possibleTargets)
+        get => _actionSelectionState;
+        set
         {
-          switch (ActionSelectionState)
-          {
-            case ActionSelectionState.Move:
-              cell.SetHighlight(Color.green);
-              break;
-            case ActionSelectionState.Attack:
-              cell.SetHighlight(Color.red);
-              break;
-            case ActionSelectionState.Skill:
-              cell.SetHighlight(Color.red);
-              break;
-          }
+            if (_actionSelectionState != value)
+            {
+                _actionSelectionState = value;
+                switch (_actionSelectionState)
+                {
+                    case ActionSelectionState.None:
+                        _selectedAlly = null;
+                        // If the state is set to None, clear the lists
+                        _cellsInRange = null;
+                        _selectedTargets = null;
+                        break;
+
+                    case ActionSelectionState.Move:
+                        _cellsInRange = _selectedAlly.GetPossibleMoves();
+                        break;
+                    case ActionSelectionState.Attack:
+                        _cellsInRange = _selectedAlly.BaseAttack.SelectTarget(_selectedAlly, new()); //? Could there be a case where the initial _cellsInRange is emtpy?
+                        break;
+                    case ActionSelectionState.Skill:
+                        _cellsInRange = _selectedAlly.ActiveSkill.SelectTarget(_selectedAlly, new()); //? Could there be a case where the initial _cellsInRange is emtpy?
+                        break;
+                }
+            }
         }
-      }
     }
-  }
 
-  private ActionSelectionState _actionSelectionState;
+    // These lists are used to for target selection
+    private List<Cell> _cellsInRange;
+    private List<Target> _selectedTargets;
 
-  public ActionSelectionState ActionSelectionState
-  {
-    get => _actionSelectionState;
-    set
+
+    public void EnterState()
     {
-      if (_actionSelectionState != value)
-      {
-        foreach (var cell in PossibleTargets)
+        RefreshPieces();
+        DecreaseRedeployTimers();
+
+        // Add the event listeners
+        InputManager.OnCellSelected += HandleCellSelected;
+        InputManager.OnCellHovered += HandleCellHovered;
+    }
+
+    public void UpdateState()
+    {
+
+    }
+
+    public void ExitState()
+    {
+        // Remove the event listeners
+        InputManager.OnCellSelected -= HandleCellSelected;
+        InputManager.OnCellHovered -= HandleCellHovered;
+    }
+
+    private void HandleCellSelected(Cell cell)
+    {
+        if (_cellsInRange.Contains(cell)) // We are clicking a highlighted cell, do the action that is currently selected
         {
-          cell.RemoveHighlight();
+            switch (ActionSelectionState)
+            {
+                case ActionSelectionState.Move:
+                    MoveCommand moveCommand = new MoveCommand(_selectedAlly, cell);
+                    moveCommand.Execute(); //? We might want to use the invoker and store the commands to be able to undo them
+                    ActionSelectionState = ActionSelectionState.None;
+                    break;
+                case ActionSelectionState.Attack:
+                    _cellsInRange = _selectedAlly.BaseAttack.SelectTarget(cell.PieceOnCell, _selectedTargets);
+                    if (_cellsInRange.Count > 0)
+                    {
+                        ActionSelectionState = ActionSelectionState.Attack;
+                    }
+                    else
+                    {
+                        ActionSelectionState = ActionSelectionState.None;
+                    }
+                    break;
+                case ActionSelectionState.Skill:
+                    _cellsInRange = _selectedAlly.ActiveSkill.SelectTarget(cell.PieceOnCell, _selectedTargets);
+                    if (_cellsInRange.Count > 0)
+                    {
+                        ActionSelectionState = ActionSelectionState.Skill;
+                    }
+                    else
+                    {
+                        ActionSelectionState = ActionSelectionState.None;
+                    }
+                    break;
+                default:
+                    throw new Exception("Unexpected ActionSelectionState");
+            }
         }
-        PossibleTargets.Clear();
-
-        _actionSelectionState = value;
-        switch (_actionSelectionState)
+        else
         {
-          case ActionSelectionState.Move:
-            PossibleTargets = SkillResolver.Instance.GetAvailableMoves(SelectedPiece);
-            break;
-          case ActionSelectionState.Attack:
-            PossibleTargets = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.BaseAttack);
-            break;
-          case ActionSelectionState.Skill:
-            PossibleTargets = SkillResolver.Instance.GetAvailableTargets(SelectedPiece, SelectedPiece.data.ActiveSkill);
-            break;
+            if (!cell.IsEmpty)
+            {
+                ActionSelectionState = ActionSelectionState.None;
+
+                if (cell.PieceOnCell is not Ally) return; // If the piece is not an ally, do nothing
+                _selectedAlly = (Ally)cell.PieceOnCell;
+
+                UIManager.Instance.SetAttackButtonInteractable(_selectedAlly.CanAttack);
+                UIManager.Instance.SetSkillButtonInteractable(_selectedAlly.CanUseSkill);
+
+                ActionSelectionState = ActionSelectionState.Move;
+            }
+            else
+            {
+                ActionSelectionState = ActionSelectionState.None;
+            }
         }
-      }
     }
-  }
 
-  private List<ICommand> _allCommands = new List<ICommand>();
-  private Dictionary<Ally, MoveCommand> _moveCommandPerPiece = new Dictionary<Ally, MoveCommand>();
-
-  public void EnterState()
-  {
-    RefreshPieces();
-    DecreaseRedeployTimers();
-    InputManager.OnCellSelected += HandleCellSelected;
-    InputManager.OnCellHovered += HandleCellHovered;
-  }
-
-  public void UpdateState()
-  {
-
-  }
-
-  public void ExitState()
-  {
-    InputManager.OnCellSelected -= HandleCellSelected;
-    InputManager.OnCellHovered -= HandleCellHovered;
-  }
-
-  private void HandleCellSelected(Cell cell)
-  {
-    if (cell.PieceOnCell != null)
+    private void HandleCellHovered(Cell cell)
     {
-      if (cell.PieceOnCell is not Ally) return;
-      SelectedPiece = (Ally)cell.PieceOnCell;
-      UIManager.Instance.SetAttackButtonInteractable(SelectedPiece.CanAttack);
-      UIManager.Instance.SetSkillButtonInteractable(SelectedPiece.CanUseSkill);
-      if (SelectedPiece.CanMove)
-      {
-        Debug.Log("Can move");
-        ActionSelectionState = ActionSelectionState.Move;
-      }
     }
-    else
+
+    private void RefreshPieces()
     {
-      if (PossibleTargets.Contains(cell)) // We are clicking a highlighted cell, do the action that is currently selected
-      {
-        switch (ActionSelectionState)
+        foreach (var piece in CombatManager.Instance.PlayerOnBoardPieces)
         {
-          case ActionSelectionState.Move:
-            MoveCommand moveCommand = new MoveCommand(SelectedPiece, cell);
-            CombatManager.Instance.Invoker.SetCommand(moveCommand);
-            CombatManager.Instance.Invoker.ExecuteCommand();
-            break;
-          case ActionSelectionState.Attack:
-            // SelectedPiece.AttackCell(cell);
-            break;
-          case ActionSelectionState.Skill:
-            // SelectedPiece.UseSkillOnCell(cell);
-            break;
+            if (piece.IsShadow == piece.CellUnderPiece.IsShadow) //? We might want to implement a compute field called IsVeiled instead of comparing the shadow status
+            {
+                piece.VeiledRefreshActions();
+            }
+            else
+            {
+                piece.UnveiledRefreshActions();
+            }
         }
-        SelectedPiece = null;
-        ActionSelectionState = ActionSelectionState.None;
-      }
-      else // We are clicking a cell that is not highlighted, cancel the selection
-      {
-        SelectedPiece = null;
-        ActionSelectionState = ActionSelectionState.None;
-      }
     }
-  }
 
-  private void HandleCellHovered(Cell cell)
-  {
-    switch (ActionSelectionState)
+    private void DecreaseRedeployTimers()
     {
-      case ActionSelectionState.Move:
-        cell.ToggleHovered();
-        break;
-      case ActionSelectionState.Attack:
-        if (PossibleTargets.Contains(cell))
+        foreach (var piece in CombatManager.Instance.PlayerOffBoardPieces)
         {
-          HandleTargetCellHovered(cell, SelectedPiece.data.BaseAttack);
+            if (piece.RedeployTimer > 0)
+            {
+                piece.RedeployTimer--;
+            }
         }
-        break;
-      case ActionSelectionState.Skill:
-        if (PossibleTargets.Contains(cell))
-        {
-          HandleTargetCellHovered(cell, SelectedPiece.data.ActiveSkill);
-        }
-        break;
     }
-  }
-
-  private void HandleTargetCellHovered(Cell cell, SkillSO skill)
-  {
-  }
-
-  private void RefreshPieces()
-  {
-    foreach (var piece in CombatManager.Instance.PlayerOnBoardPieces)
-    {
-      if (piece.IsShadow == piece.CellUnderPiece.IsShadow)
-      {
-        piece.VeiledRefreshActions();
-      }
-      else
-      {
-        piece.UnveiledRefreshActions();
-      }
-    }
-  }
-
-  private void DecreaseRedeployTimers()
-  {
-    foreach (var piece in CombatManager.Instance.PlayerOffBoardPieces)
-    {
-      if (piece.RedeployTimer > 0)
-      {
-        piece.RedeployTimer--;
-      }
-    }
-  }
 }
