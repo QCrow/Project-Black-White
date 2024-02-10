@@ -17,6 +17,28 @@ public class PlayerCombatState : ICombatState
 {
     private Ally _selectedAlly;
 
+    public Ally SelectedAlly
+    {
+        get => _selectedAlly;
+        set
+        {
+            if (_selectedAlly != value)
+            {
+                _selectedAlly = value;
+                if (_selectedAlly != null)
+                {
+                    UIManager.Instance.SetAttackButtonInteractable(_selectedAlly.CanAttack);
+                    UIManager.Instance.SetSkillButtonInteractable(_selectedAlly.CanUseSkill);
+                }
+                else
+                {
+                    UIManager.Instance.SetAttackButtonInteractable(false);
+                    UIManager.Instance.SetSkillButtonInteractable(false);
+                }
+            }
+        }
+    }
+
     private ActionSelectionState _actionSelectionState;
 
     public ActionSelectionState ActionSelectionState
@@ -30,35 +52,84 @@ public class PlayerCombatState : ICombatState
                 switch (_actionSelectionState)
                 {
                     case ActionSelectionState.None:
-                        _selectedAlly = null;
+                        SelectedAlly = null;
                         // If the state is set to None, clear the lists
-                        _cellsInRange = null;
-                        _selectedTargets = null;
+                        CellsInRange = new();
+                        _selectedTargets = new();
                         break;
 
                     case ActionSelectionState.Move:
-                        _cellsInRange = _selectedAlly.GetPossibleMoves();
+                        CellsInRange = SelectedAlly.GetPossibleMoves();
                         break;
                     case ActionSelectionState.Attack:
-                        _cellsInRange = _selectedAlly.BaseAttack.SelectTarget(_selectedAlly, new()); //? Could there be a case where the initial _cellsInRange is emtpy?
+                        CellsInRange = SelectedAlly.BaseAttack.SelectTarget(SelectedAlly, new()); //? Could there be a case where the initial CellsInRange is emtpy?
                         break;
                     case ActionSelectionState.Skill:
-                        _cellsInRange = _selectedAlly.ActiveSkill.SelectTarget(_selectedAlly, new()); //? Could there be a case where the initial _cellsInRange is emtpy?
+                        CellsInRange = SelectedAlly.ActiveSkill.SelectTarget(SelectedAlly, new()); //? Could there be a case where the initial CellsInRange is emtpy?
                         break;
                 }
             }
         }
     }
 
-    // These lists are used to for target selection
-    private List<Cell> _cellsInRange;
-    private List<Target> _selectedTargets;
+    private TargetType ValidTargetType()
+    {
+        if (ActionSelectionState == ActionSelectionState.Move)
+        {
+            return TargetType.Empty;
+        }
+        else if (ActionSelectionState == ActionSelectionState.Attack)
+        {
+            return SelectedAlly.BaseAttack.ValidTargetType[SelectedTargets.Count];
+        }
+        else if (ActionSelectionState == ActionSelectionState.Skill)
+        {
+            return SelectedAlly.ActiveSkill.ValidTargetType[SelectedTargets.Count];
+        }
+        else
+        {
+            throw new Exception("Unexpected ActionSelectionState");
+        }
+    }
 
+    // These lists are used to for target selection
+    private List<Cell> _cellsInRange = new();
+    public List<Cell> CellsInRange
+    {
+        get => _cellsInRange;
+        set
+        {
+            foreach (var cell in _cellsInRange)
+            {
+                cell.State = CellState.Normal;
+            }
+            _cellsInRange = value;
+            foreach (var cell in _cellsInRange)
+            {
+                cell.State = CellState.InRange;
+            }
+        }
+    }
+
+    private List<Target> _selectedTargets = new();
+    public List<Target> SelectedTargets
+    {
+        get => _selectedTargets;
+        set
+        {
+            if (_selectedTargets.Count > 0)
+                _selectedTargets[-1].TargetCell.State = CellState.Normal;
+            _selectedTargets = value;
+            if (_selectedTargets.Count > 0)
+                _selectedTargets[-1].TargetCell.State = CellState.Selected;
+        }
+    }
 
     public void EnterState()
     {
         RefreshPieces();
         DecreaseRedeployTimers();
+        ActionSelectionState = ActionSelectionState.None;
 
         // Add the event listeners
         InputManager.OnCellSelected += HandleCellSelected;
@@ -84,13 +155,15 @@ public class PlayerCombatState : ICombatState
             switch (ActionSelectionState)
             {
                 case ActionSelectionState.Move:
-                    MoveCommand moveCommand = new MoveCommand(_selectedAlly, cell);
+                    MoveCommand moveCommand = new MoveCommand(SelectedAlly, cell);
                     moveCommand.Execute(); //? We might want to use the invoker and store the commands to be able to undo them
                     ActionSelectionState = ActionSelectionState.None;
+                    ActionSelectionState = ActionSelectionState.Move;
                     break;
                 case ActionSelectionState.Attack:
-                    _cellsInRange = _selectedAlly.BaseAttack.SelectTarget(cell.PieceOnCell, _selectedTargets);
-                    if (_cellsInRange.Count > 0)
+                    SelectedTargets.Add(new Target(cell, cell.PieceOnCell));
+                    CellsInRange = SelectedAlly.BaseAttack.SelectTarget(SelectedAlly, SelectedTargets);
+                    if (CellsInRange.Count > 0)
                     {
                         ActionSelectionState = ActionSelectionState.Attack;
                     }
@@ -100,8 +173,9 @@ public class PlayerCombatState : ICombatState
                     }
                     break;
                 case ActionSelectionState.Skill:
-                    _cellsInRange = _selectedAlly.ActiveSkill.SelectTarget(cell.PieceOnCell, _selectedTargets);
-                    if (_cellsInRange.Count > 0)
+                    SelectedTargets.Add(new Target(cell, cell.PieceOnCell));
+                    CellsInRange = SelectedAlly.ActiveSkill.SelectTarget(SelectedAlly, SelectedTargets);
+                    if (CellsInRange.Count > 0)
                     {
                         ActionSelectionState = ActionSelectionState.Skill;
                     }
@@ -121,10 +195,10 @@ public class PlayerCombatState : ICombatState
                 ActionSelectionState = ActionSelectionState.None;
 
                 if (cell.PieceOnCell is not Ally) return; // If the piece is not an ally, do nothing
-                _selectedAlly = (Ally)cell.PieceOnCell;
+                SelectedAlly = (Ally)cell.PieceOnCell;
 
-                UIManager.Instance.SetAttackButtonInteractable(_selectedAlly.CanAttack);
-                UIManager.Instance.SetSkillButtonInteractable(_selectedAlly.CanUseSkill);
+                UIManager.Instance.SetAttackButtonInteractable(SelectedAlly.CanAttack);
+                UIManager.Instance.SetSkillButtonInteractable(SelectedAlly.CanUseSkill);
 
                 ActionSelectionState = ActionSelectionState.Move;
             }
@@ -137,6 +211,11 @@ public class PlayerCombatState : ICombatState
 
     private void HandleCellHovered(Cell cell)
     {
+        if (CellsInRange.Contains(cell))
+        {
+            if (new Target(cell).IsValidTarget(SelectedAlly, ValidTargetType()))
+                cell.Hovered();
+        }
     }
 
     private void RefreshPieces()

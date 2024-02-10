@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public abstract class Piece : MonoBehaviour
@@ -32,11 +33,13 @@ public abstract class Piece : MonoBehaviour
         BoardManager.Instance.MovePieceToCell(this.gameObject, newCell.gameObject);
     }
 
+    public int x => CellUnderPiece.IndexPosition.x;
+    public int y => CellUnderPiece.IndexPosition.y;
 
     protected int _maxHitPoints = 100;
-    protected int _currentHitPoints;
+    [SerializeField] protected int _currentHitPoints;
 
-    public void takeDamage(int damage)
+    public void TakeDamage(int damage)
     {
         _currentHitPoints -= damage;
         if (_currentHitPoints <= 0)
@@ -46,7 +49,7 @@ public abstract class Piece : MonoBehaviour
         }
     }
 
-    public void heal(int heal)
+    public void Heal(int heal)
     {
         _currentHitPoints += heal;
         if (_currentHitPoints > _maxHitPoints)
@@ -55,14 +58,14 @@ public abstract class Piece : MonoBehaviour
         }
     }
 
-    public void resetHealth()
+    public void ResetHealth()
     {
         _currentHitPoints = _maxHitPoints;
     }
 
     public virtual void Initialize()
     {
-        resetHealth();
+        ResetHealth();
     }
 
     public virtual List<Cell> GetPossibleMoves()
@@ -91,7 +94,7 @@ public abstract class Piece : MonoBehaviour
 
                 foreach (Cell neighbor in currentCell.GetNeighbors())
                 {
-                    if (!distances.ContainsKey(neighbor) && neighbor.IsPassable())
+                    if (!distances.ContainsKey(neighbor) && neighbor.IsPassable)
                     {
                         queue.Enqueue(neighbor);
                         distances[neighbor] = currentDistance + 1;

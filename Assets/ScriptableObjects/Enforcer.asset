@@ -15,10 +15,9 @@ MonoBehaviour:
   Name: Enforcer
   Type: 0
   MaxHitPoints: 100
-  MaxActionPoints: 100
-  UnveiledActionPointRestoration: 0
+  MaxActionPoints: 5
+  UnveiledActionPointRestoration: 1
   turnsToRedeploy: 1
   MoveRange: 3
-  BaseAttack: {fileID: 11400000, guid: f534a8df8b3e84cf1aab1fafaf3c35f1, type: 2}
-  AllSkills:
-  - {fileID: 11400000, guid: 00168dfb663da4287a00fe7061994920, type: 2}
+  BaseAttackType: 0
+  AllSkillTypes: 01000000

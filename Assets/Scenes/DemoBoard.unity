@@ -689,7 +689,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CharacterBaseDatas:
   - {fileID: 11400000, guid: 9f9e46c3e31bf4a2787604bb5a6540cf, type: 2}
-  - {fileID: 11400000, guid: b9c0499c593ab4535a2de61dc145d0ee, type: 2}
+  - {fileID: 11400000, guid: 9f9e46c3e31bf4a2787604bb5a6540cf, type: 2}
 --- !u!1 &475100974
 GameObject:
   m_ObjectHideFlags: 0

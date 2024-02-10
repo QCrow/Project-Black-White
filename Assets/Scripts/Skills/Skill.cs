@@ -3,36 +3,20 @@ using UnityEngine;
 
 public abstract class Skill
 {
-
+    //TODO: Localization might be needed eventually
     public readonly string Name;
     public readonly string Description;
-
-    public readonly List<Vector2Int> Range;
-
-    public readonly List<Vector2Int> Area;
-
-    public readonly int Cooldown;
-
-    public readonly List<Effect> Effects;
-
     public readonly int Cost;
+    public readonly int Cooldown;
+    public readonly List<TargetType> ValidTargetType;
 
-    public readonly int minimumPossibleTargets;
-    public readonly int maximumPossibleTargets;
-    protected readonly List<TargetType> TargetTypes;
-
-    public Skill(string name, string description, List<Vector2Int> range, List<Vector2Int> area, int cooldown, List<Effect> effects, int cost, int minimumPossibleTargets, int maximumPossibleTargets, List<TargetType> targetTypes)
+    public Skill(string name, string description, int cost, int cooldown, List<TargetType> validTargetType)
     {
         Name = name;
         Description = description;
-        Range = range;
-        Area = area;
-        Cooldown = cooldown;
-        Effects = effects;
         Cost = cost;
-        this.minimumPossibleTargets = minimumPossibleTargets;
-        this.maximumPossibleTargets = maximumPossibleTargets;
-        TargetTypes = targetTypes;
+        Cooldown = cooldown;
+        ValidTargetType = validTargetType;
     }
 
     /// <summary>

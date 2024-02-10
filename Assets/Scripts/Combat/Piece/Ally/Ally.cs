@@ -5,7 +5,8 @@ public abstract class Ally : Piece
 {
     public Character data;
 
-    public int CurrentActionPoints { get; set; }
+    [SerializeField] private int _currentActionPoints;
+    public int CurrentActionPoints { get => _currentActionPoints; set => _currentActionPoints = value; }
 
     public int RedeployTimer { get; set; }
 

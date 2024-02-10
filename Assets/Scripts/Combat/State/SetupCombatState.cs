@@ -39,7 +39,6 @@ public class SetupCombatState : ICombatState
         Ally playerPieceOnCell = null;
         if (cell.PieceOnCell != null)
         {
-            Debug.Log("Piece on cell!");
             if (!CombatManager.Instance.PlayerOnBoardPieces.Contains(cell.PieceOnCell)) return;
 
             playerPieceOnCell = (Ally)cell.PieceOnCell;
@@ -59,11 +58,9 @@ public class SetupCombatState : ICombatState
         if (CombatManager.Instance.PlayerOffBoardPieces.Count == 0) return;
 
         Ally playerPieceToPlace = CombatManager.Instance.PlayerOffBoardPieces[0];
-        Debug.Log("Piece to place: " + playerPieceToPlace.data.Name);
         if (playerPieceToPlace == playerPieceOnCell) return; // If the place to place is the same piece that we just removed, do nothing
         if (playerPieceToPlace.IsShadow != cell.IsShadow) return;
 
-        Debug.Log("Setting up command");
         command = new DeployCommand(playerPieceToPlace, cell);
         CombatManager.Instance.Invoker.SetCommand(command);
         CombatManager.Instance.Invoker.ExecuteCommand();

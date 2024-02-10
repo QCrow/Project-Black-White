@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Cell : MonoBehaviour
@@ -26,23 +27,50 @@ public class Cell : MonoBehaviour
 
     public bool IsEmpty => PieceOnCell == null;
 
-    private Renderer _renderer;
-    private MaterialPropertyBlock _propBlock;
-
-    private bool _isHovered = false;
-    public bool IsHovered
+    private CellState _previousState = CellState.Normal;
+    private CellState _state = CellState.Normal;
+    public CellState State //? This responsibility might need to be handled elsewhere since highlight might be handled differently in the future
     {
-        get => _isHovered;
+        get => _state;
         set
         {
-            if (_isHovered != value)
+            if (_state != value)
             {
-                _isHovered = value;
+                _previousState = _state;
+                _state = value;
+
+                switch (_state)
+                {
+                    case CellState.Normal:
+                        RemoveHighlight();
+                        break;
+                    case CellState.Selected:
+                        SetHighlight(new Color(255, 205, 117));
+                        break;
+                    case CellState.InRange:
+                        PlayerCombatState state = CombatManager.Instance.CurrentState as PlayerCombatState;
+                        if (state != null)
+                        {
+                            if (state.ActionSelectionState == ActionSelectionState.Move)
+                            {
+                                SetHighlight(Color.green);
+                            }
+                            else
+                            {
+                                SetHighlight(Color.red);
+                            }
+                        }
+                        break;
+                    case CellState.Hovered:
+                        SetHighlight(Color.yellow);
+                        break;
+                }
             }
         }
     }
-    private bool _isHighlighted = false;
-    private Color _currentHighlightColor;
+
+    private Renderer _renderer;
+    private MaterialPropertyBlock _propBlock;
 
     public override string ToString()
     {
@@ -124,15 +152,9 @@ public class Cell : MonoBehaviour
         return neighbors;
     }
 
-    public bool IsPassable()
-    {
-        return IsEmpty && GetComponent<CellTerrain>().IsPassable;
-    }
+    public bool IsPassable => IsEmpty && GetComponent<CellTerrain>().IsPassable;
 
-    public bool BlocksProjectile()
-    {
-        return !IsEmpty || GetComponent<CellTerrain>().BlocksProjectile;
-    }
+    public bool BlocksProjectile => !IsEmpty || GetComponent<CellTerrain>().BlocksProjectile;
 
     public void SetHighlight(Color color)
     {
@@ -148,8 +170,6 @@ public class Cell : MonoBehaviour
                 highlightRenderer.SetPropertyBlock(highlightPropBlock);
             }
             highlight.gameObject.SetActive(true);
-            _isHighlighted = true;
-            _currentHighlightColor = color;
         }
     }
 
@@ -160,33 +180,43 @@ public class Cell : MonoBehaviour
         {
             highlight.gameObject.SetActive(false);
         }
-        _isHighlighted = false;
     }
 
 
-    public void ToggleHovered()
+    public Color GetCurrentHighlightColor()
     {
-        _isHovered = !_isHovered;
-    }
-
-    public void ToggleTargetedHovered()
-    {
-        _isHovered = !_isHovered;
-        if (_isHovered)
+        Transform highlight = transform.Find("Highlight");
+        if (highlight != null)
         {
-            SetHighlight(Color.yellow);
+            Renderer highlightRenderer = highlight.GetComponent<Renderer>();
+            if (highlightRenderer != null)
+            {
+                MaterialPropertyBlock highlightPropBlock = new MaterialPropertyBlock();
+                highlightRenderer.GetPropertyBlock(highlightPropBlock);
+                return highlightPropBlock.GetColor("_Color");
+            }
+        }
+        return Color.white;
+    }
 
+    public void Hovered()
+    {
+        if (State == CellState.Hovered)
+        {
+            State = _previousState;
         }
         else
         {
-            if (_isHighlighted)
-            {
-                SetHighlight(Color.red);
-            }
-            else
-            {
-                RemoveHighlight();
-            }
+            State = CellState.Hovered;
         }
     }
 }
+
+public enum CellState
+{
+    Normal,
+    Selected,
+    InRange,
+    Hovered
+}
+

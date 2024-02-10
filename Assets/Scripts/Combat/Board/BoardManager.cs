@@ -117,8 +117,12 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public bool IsWithinBoard(int x, int y)
+    public Cell GetCell(int x, int y)
     {
-        return x >= 0 && x < Size && y >= 0 && y < Size;
+        if (!TargetingHelper.IsWithinBoard(x, y))
+        {
+            return null;
+        }
+        return CurrentBoard[x][y];
     }
 }
