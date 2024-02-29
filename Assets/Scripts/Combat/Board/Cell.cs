@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class Cell : MonoBehaviour
@@ -23,9 +24,21 @@ public class Cell : MonoBehaviour
     private Color color = Color.white;
 
     public Vector2Int IndexPosition = new(0, 0);
+    public int x
+    {
+        get => IndexPosition.x;
+        set => IndexPosition.x = value;
+    }
+
+    public int y
+    {
+        get => IndexPosition.y;
+        set => IndexPosition.y = value;
+    }
+
     public Piece PieceOnCell;
 
-    public bool IsEmpty => PieceOnCell == null;
+    public bool IsEmpty => PieceOnCell == null; // TODO: Might need to be changed to represent obstacles as well as pieces
 
     private CellState _previousState = CellState.Normal;
     private CellState _state = CellState.Normal;

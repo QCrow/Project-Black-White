@@ -14,7 +14,7 @@ public class SetupCombatState : ICombatState
 
         _commands = new List<ICommand>();
 
-        InputManager.OnCellSelected += HandleCellSelected;
+        InputManager.OnCellSelected += HandleCellSelected; // Subscribe to the cell selected event (observer pattern)
     }
 
     public void ExitState()

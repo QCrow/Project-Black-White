@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player
+public class Player // Player run progression data
 {
     public List<Character> ActiveCharacters = new List<Character>();
 

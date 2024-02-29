@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class CombatManager : MonoBehaviour
 {
-    public static CombatManager Instance { get; private set; }
-    public CommandInvoker Invoker;
+    public static CombatManager Instance { get; private set; } // Singleton instance
+    public CommandInvoker Invoker; // The command invoker for the combat (for undoing moves)
 
-    private Player _playerData;
+    private Player _playerData; // Run data for the player
     public List<Ally> PlayerPieces = new List<Ally>();
     public List<Ally> PlayerOnBoardPieces = new List<Ally>();
     public List<Ally> PlayerOffBoardPieces = new List<Ally>();

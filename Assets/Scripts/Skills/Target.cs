@@ -89,7 +89,7 @@ public static class TargetingHelper
                 if (IsWithinBoard(x, y))
                 {
                     Cell cell = BoardManager.Instance.CurrentBoard[x][y];
-                    cells.Add(cell);
+                    cells.Add(cell); //? Right now, the range also include the hit cell, but it might be changed in the future
                     if (!cell.IsEmpty)
                     {
                         piercingCounter++;

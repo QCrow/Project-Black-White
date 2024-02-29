@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.Rendering.UI;
-using UnityEngine.UI;
 
 public enum ActionSelectionState
 {
@@ -157,7 +153,9 @@ public class PlayerCombatState : ICombatState
                 case ActionSelectionState.Move:
                     MoveCommand moveCommand = new MoveCommand(SelectedAlly, cell);
                     moveCommand.Execute(); //? We might want to use the invoker and store the commands to be able to undo them
+                    Ally currentAlly = SelectedAlly;
                     ActionSelectionState = ActionSelectionState.None;
+                    SelectedAlly = currentAlly;
                     ActionSelectionState = ActionSelectionState.Move;
                     break;
                 case ActionSelectionState.Attack:

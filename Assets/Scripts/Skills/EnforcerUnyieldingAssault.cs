@@ -1,8 +1,7 @@
 
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class EnforcerUnyieldingAssault : Skill
 {
@@ -46,19 +45,29 @@ public class EnforcerUnyieldingAssault : Skill
         // Compute the direction of the charge
         Vector2Int direction = target.x > caster.x ? new Vector2Int(1, 0) : target.x < caster.x ? new Vector2Int(-1, 0) : target.y > caster.y ? new Vector2Int(0, 1) : new Vector2Int(0, -1);
 
-        // Position the caster on charge impact cell
-        Cell previousCell = BoardManager.Instance.GetCell(target.x - direction.x, target.y - direction.y);
-        caster.CellUnderPiece = previousCell;
+        List<Cell> cellsOnPath = TargetingHelper.GetProjectileRange(caster.CellUnderPiece, new List<Vector2Int>(new Vector2Int[] { direction }), _projectileRange);
 
-        caster.TakeDamage(1);
-        target.TargetPiece.TakeDamage(2);
-
-        // Knock back the target by one cell
-        Cell nextCell = BoardManager.Instance.GetCell(target.x + direction.x, target.y + direction.y);
-        if (nextCell != null && nextCell.IsPassable)
+        // Change cells color
+        foreach (Cell cell in cellsOnPath)
         {
-            target.TargetPiece.CellUnderPiece = nextCell;
+            cell.IsShadow = true;
         }
+        caster.CellUnderPiece.IsShadow = true;
+
+        // Displace the caster
+        Cell stoppingCell = cellsOnPath.Last();
+        if (stoppingCell.PieceOnCell == null)
+        {
+            caster.CellUnderPiece = stoppingCell;
+        }
+        else
+        {
+            caster.CellUnderPiece = BoardManager.Instance.GetCell(stoppingCell.x - direction.x, stoppingCell.y - direction.y);
+            caster.TakeDamage(1);
+            stoppingCell.PieceOnCell.TakeDamage(2);
+        }
+
+        //? Might include a knockback?
 
         ((Ally)caster).CurrentActionPoints -= Cost;
     }
